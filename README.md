@@ -8,7 +8,7 @@ MPTCP is used to provide the user the ability to create several tunnels, over
 various underlying protocols (IP, TCP, UDP, DNS, HTTP) such that the total
 outgoing bandwidth is maximized.
 
-OpenTCP is used to encrypt outgoing traffic such that it true nature is not
+OpenVPN is used to encrypt outgoing traffic such that it true nature is not
 obvious to network administrators and egress firewalls.
 
 Because of issues pertaining to the deployment of MPTCP in the current Internet,
