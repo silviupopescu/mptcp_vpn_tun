@@ -9,3 +9,12 @@ MPTCP works by establishing multiple subflows under a single socket connection, 
 The main obstacle for large scale deployment of MPTCP is the presence of middleboxes, intermediary routers or other network devices that interfere and modify packets that pass through them. Since MPTCP relies on newly created TCP options, this is a major issue. MPTCP researchers have found that up to 6\% of middleboxes strip unkown options from the TCP header (with that percentage increasing to 14\% when dealing with connections on port 80). Middlebox constraints have also influenced other design decisions for MPTCP, such as additional subflows in an existing connection requiring a SYN handshake because NAT devices and firewalls drop packets that are not preceded by a SYN.
 
 Still, the major constraint for MPTCP remains performing at least as well as TCP in any conditions. Since MPTCP can use multiple types of interfaces, each with different characteristics, there is the need to understand how connection or subflow parameters can affect performance.
+
+The purpose of the initial phase of our project is to build a simulation environment and use it to vary different TCP communication parameters and channel conditions in order to observe how MPTCP performance is affected. We experiment with parameters such as:
+\begin{itemize}
+\item Bandwidth. Since the tests are run inside a simulator, we are able to test traffic behavior over links ranging from very low bandwidth (1 Mbps) to very high (16 Gbps).
+\item Delay. Similar to bandwidth, we can manipulate delay in order to observe how MPTCP adapts to different RTT values on different paths.
+\item Loss. Channel loss greater than 10\% has been found to cause MPTCP to perform 20-30\% worse than TCP because the congestion controller overestimates the throughput of such subflows \cite{TODO}. We further investigate on this matter.
+\item Receive buffer. The size of the receive buffer is related to the bandwidth-delay product and it needs to be scaled in accordance to the number of packets in flight.
+\item Congestion window. MPTCP uses per-subflow congestion windows. We wish the observe the correlation between the congestion window size and the bandwidth-delay product.
+\end{itemize}
