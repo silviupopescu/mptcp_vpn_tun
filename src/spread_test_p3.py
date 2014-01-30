@@ -105,7 +105,7 @@ if __name__ == '__main__':
     num_runs = 1
 #    run_test('test.log', 10, 1, bw=1, delay=1, loss=0, max_queue_size=16, use_htb=True)
     for cwnd in range(10, 122, 20):
-        for bdw in map(lambda x: 2 ** x, range(0, 15)):
+        for bdw in map(lambda x: 2 ** x, range(6, 9)):
             for dly in range(0, 102, 20):
                 #for lss in range(0, 51, 10):
                 lss = 0
