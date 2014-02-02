@@ -21,7 +21,7 @@ Still, the major constraint for MPTCP remains performing at least as well as TCP
 
 The purpose of the initial phase of our project is to build a simulation environment and use it to vary different TCP communication parameters and channel conditions in order to observe how MPTCP performance is affected. We experiment with parameters such as:
 \begin{itemize}
-\item Bandwidth. Since the tests are run inside a simulator, we are able to test traffic behavior over links ranging from very low bandwidth (1 Mbps) to very high (16 Gbps).
+\item Bandwidth. Since the tests are run inside a simulator, we are able to test traffic behavior over links ranging from very low bandwidth (1 Mbps) to very high (1 Gbps).
 \item Delay. Similar to bandwidth, we can manipulate delay in order to observe how MPTCP adapts to different RTT values on different paths.
 \item Loss. Channel loss greater than 10\% has been found to cause MPTCP to
 perform 20-30\% worse than TCP because the congestion controller overestimates
