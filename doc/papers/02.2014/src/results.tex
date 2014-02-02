@@ -20,5 +20,17 @@ Figure \ref{fig:16mbps-cw} shows the impact of the congestion window's initial s
 
 Figure \ref{fig:16mbps-d} outlines the impact of delay. MPTCP's performance is close to the maximum possible throughput of 32 Mbps regardless of the receive buffer when there is zeo delay. The performance expectedly decreases when delay is larger and we notice that the receive buffer size starts to influence throughput. That is because the size of the receive buffer is conditioned by the bandwidth-delay product as it was mentioned in \ref{sec:related}.
 
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{img/throughput-bdw-avg}
+  \caption{Link capacity impact with average delay}
+  \label{fig:bdw-avg}
+\end{figure}
 
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{img/throughput-bdw-max}
+  \caption{Link capacity impact with no delay}
+  \label{fig:bdw-max}
+\end{figure}
 
