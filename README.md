@@ -1,7 +1,7 @@
-mptcp_vpn_tun
+SMOTHER
 =============
-
-A system that allows users to bypass egress firewalls using MPTCP, OpenVPN and
+SMOTHER (Secure Multipath OstenTatiously Harassing Egress Restrictions) is
+a system that allows users to bypass egress firewalls using MPTCP, OpenVPN and
 tunneling traffic via common protocols.
 
 MPTCP is used to provide the user the ability to create several tunnels, over
