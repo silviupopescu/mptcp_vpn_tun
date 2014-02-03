@@ -1,3 +1,43 @@
 % vim: set tw=78 sts=2 sw=2 ts=8 aw et ai:
 
-Design and architectural details.
+Bandwidth is easily the most important feature of any link when attempting to
+gauge throughput between two peers. It is important that we cover a significant
+range of values, given the two main usage scenarios for MPTCP, namely mobile
+devices and datacenters. To this end we must look into MPTCP behavior over
+links with small capacity, on the order of a few Megabits/second, but also
+over high capacity links, which offer bandwidth in the realm of
+Gigabits/second. Ideally, when using MPTCP, the throughput should be the sum
+of the bandwidths provided by the links over which the Layer 4 connection
+establishes subflows. We will look into the factors that facilitate or prevent
+this goal.
+
+Delay or, equivalently, round trip time (RTT) is the second most relevant
+characteristic of the channel. Long delays mean that the congestion algorithm
+employed by MPTCP must adapt the number of packets sent in one burst. In fact,
+the bandwidth-delay product dictates how much data the channel is capable of
+sustaining. As with bandwidth, we must model higher delay values for mobile
+devices and lower rates for datacenter link.
+
+Loss has extremely unpleasant effects when dealing with normal TCP since it
+leads to the congestion window reducing itself. With MPTCP, which has a
+congestion algorithm that factors loss on all subflows, loss rate is liable to
+have an even more pronounced impact. This feature is more relevant to mobile
+communications which exhibit volatile behavior as opposed to datacents, which
+are designed for stability.
+
+The receive buffer relates heavily with the bandwidth-delay product since it
+should be large enough to hold as much data as the aggregated bandwidth-delay
+products of all the subflows. However, allocating such extensive buffers for
+every connection could prove troublesome and quickly lead to memory
+exhaustion. For links with high bandwidth-delay products, larger buffers lead
+to better channel utilization, but worse endpoint memory availability. Some
+balance between these two opposing goals must be found.
+
+The congestion window dictates how many packets may be sent by an endpoint in
+a single burst. Ideally the congestion window should be large enough to
+account for the bandwidth-delay product. Since the nodes have no idea of the
+link characteristic they start with small congestion windows and gradually
+increase them. This initial congestion window may take a relevant amount of
+time to reach the optimal value. To this end, we analyze how the initial
+congestion window relates with the receive buffer and the bandwidth-delay
+product.
