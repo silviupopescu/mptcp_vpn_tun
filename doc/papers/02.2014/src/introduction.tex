@@ -4,7 +4,18 @@ Virtually all connection oriented communication in the Internet is done using TC
 
 MPTCP is the IETF's attempt to address the need mentioned above. The specification was published as an Experimental standard in RFC 6824 and a stable Linux kernel implementation is also available, although it has not been upstreamed as of the time of writing. In order to be effective as a TCP replacement, MPTCP needs to satisfy three conditions: be backwards compatible with TCP (current applications need to be able to run unmodified on MPTCP), be compatible with today's networks (run on existing devices) and perform at least as well as TCP in any given situation. It has two obvious main use cases: mobile devices which are equipped with both WiFi and 3G interfaces and datacenters, where it can improve robustness.
 
-MPTCP works by establishing multiple subflows under a single socket connection, with each subflow able to take a separate path to the destination. Subflows are established using TCP SYN packets with special MPTCP options. The SYN contains the MP_CAPABLE option which must be echoed in the SYN/ACK which is received from the other end. MPTCP always falls back on TCP is this negotiation cannot be completed. Each subflow can be seen as a TCP flow independently. Subflows have their own sequence numbers for handling retransmissions, while there is also a per-connection sequence number mechanism to ensure reordering at the destination. MPTCP's break-before-make mechanism allows subflows to be created or destroyed while keeping the connection alive with everything being transparent to the application i.e. switching to another network interface with a different IP address. 
+MPTCP works by establishing multiple subflows under a single socket
+connection, with each subflow able to take a separate path to the destination.
+Subflows are established using TCP SYN packets with special MPTCP options. The
+SYN contains the MP_CAPABLE option which must be echoed in the SYN/ACK which
+is received from the other end. MPTCP always falls back on TCP if this
+negotiation cannot be completed. Each subflow can be seen as a TCP flow
+independently. Subflows have their own sequence numbers for handling
+retransmissions, while there is also a per-connection sequence number mechanism
+to ensure reordering at the destination. MPTCP's break-before-make mechanism
+allows subflows to be created or destroyed while keeping the connection alive
+with everything being transparent to the application i.e. switching to another
+network interface with a different IP address.
 
 The main obstacle for large scale deployment of MPTCP is the presence of
 middleboxes, intermediary routers or other network devices that interfere and

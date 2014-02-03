@@ -2,6 +2,15 @@
 
 The issue of performance and how MPTCP must handle competing flows and share network capacity has obviously concerned its creators and researchers. One of the main topics has been congestion control and designing an algorithm that makes MPTCP beneficial when compared to regular TCP.  The algorithm increases and decreases the window based on each ACK received and each loss and was able to seamlessly balance traffic over 3G and WiFi links while also proving itself to be fair to other traffic \cite{congestion-control}.
 
-The relation between congestion window size and receive buffer size has also been the subject of attention \cite{how-hard-can-it-be}.  Things are relatively simple for single-path TCP: the receive buffer must equal the bandwidth-delay product in order to avoid flow control. For MPTCP, the receive buffer must equal $\sum x_i RTT_{max}$, where $x_i$  represents the throughput for subflow $i$ and $RTT_{max}$ is the RTT for the slowest subflow. This ensures that the other subflows are not blocked from sending while waiting for the slowest one \cite{how-hard-can-it-be}. Mechanisms to minimize memory usage included opportunistic retransmissions, penalizing slow subflows and buffer autotuning with capping.
+The relation between congestion window size and receive buffer size has also
+been the subject of attention \cite{how-hard-can-it-be}.  Things are
+relatively simple for single-path TCP: the receive buffer must equal the
+bandwidth-delay product in order to avoid flow control. For MPTCP, the receive
+buffer must equal $2\times\sum x_i RTT_{max}$, where $x_i$  represents the
+throughput for subflow $i$ and $RTT_{max}$ is the RTT for the slowest subflow.
+This ensures that the other subflows are not blocked from sending while waiting
+for the slowest one \cite{how-hard-can-it-be}. Mechanisms to minimize memory
+usage included opportunistic retransmissions, penalizing slow subflows and
+buffer autotuning with capping.
 
 A study was also undertaken in order to establish what degree of improvement MPTCP can bring to datacenters, one of its two main use cases. MPTCP's capability to move traffic away from congestion was considered ideal for increasing network utilization and capacity allocation \cite{in-datacenters}. A packet level simulator (htsim) was implemented and used to model TCP and MPTCP traffic at large scale and high speeds.  Results showed that MPTCP is beneficial in situations where the bottleneck comes from the network core rather than from individual hosts.
