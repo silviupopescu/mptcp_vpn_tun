@@ -104,3 +104,5 @@ maximum throughput is heavily affected by link parametrization, the previously
 described MPTCP behavior is still relevant, as CPU limitations do not manifest
 until higher rates are attempted.
 
+We did not model channel loss into our tests due to  unexpected behavior from the Mininet simulator. A loss rate of as low as 10\% led to throughput drop by a factor of 20.
+
