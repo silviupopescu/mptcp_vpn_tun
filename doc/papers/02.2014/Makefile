@@ -24,6 +24,11 @@ $(PDF): $(TEX) $(BIB) src/
 	# Twice, so TOC is also updated
 	$(PDFLATEX) $<
 	$(PDFLATEX) $<
+	mv $(PDF) R1_SRIC_SilviuPetria_SilviuPopescu.pdf
 
 clean:
 	-rm -f *~ *.aux *.log *.blg *.bbl *.out
+
+distclean: clean
+	-rm -f *.pdf
+
