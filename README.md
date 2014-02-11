@@ -6,7 +6,9 @@ tunneling traffic via common protocols.
 
 MPTCP is used to provide the user the ability to create several tunnels, over
 various underlying protocols (IP, TCP, UDP, DNS, HTTP) such that the total
-outgoing bandwidth is maximized.
+outgoing bandwidth is maximized, provided there are several outgoing network
+interfaces. Common cases include mobile devices (3G/4G/WiFi) and datacenters
+(which have several links per node).
 
 OpenVPN is used to encrypt outgoing traffic such that it true nature is not
 obvious to network administrators and egress firewalls.
