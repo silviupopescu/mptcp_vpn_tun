@@ -89,9 +89,13 @@ if __name__ == '__main__':
     # leads to an empty file
     h1.cmd('iperf -s -D')
     sleep(1)
-    h2.cmd('iperf -c 12.0.0.1 -f k -t 60 2>&1 | tail -n 1 > iperf.log')
+    h2.cmd('iperf -c 12.0.0.1 -f k -t 10 2>&1 | tail -n 1 > iperf.log')
+    h2.cmd("cat iperf.log | tr -s ' ' | cut -d' ' -f7 | tail -n 1 > iperf2.log")
     h1.cmd('killall iperf')
-
+    with open('iperf2.log', 'r') as f:
+        raw_data = f.read()
+        val = int(raw_data)
+        print val
 
     net.startTerms()
     CLI(net)
