@@ -93,7 +93,7 @@ def run_test(logfile, num_tests, **link_opts):
                                avg))
     print '%d %d %f' % (int(link_opts['delay'][:-2]),
                                link_opts['bw'],
-                               avg))
+                               avg)
 
 if __name__ == '__main__':
     num_runs = 1
