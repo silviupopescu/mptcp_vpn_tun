@@ -74,15 +74,18 @@ def run_test(logfile, num_tests, **link_opts):
 
     avg = 0.0
 
+    h1.cmd('iperf -s -D')
+    sleep(1)
+
     for i in range(num_tests):
-        h1.cmd('iperf -s -D')
-        sleep(1)
-        h2.cmd('iperf -c 12.0.0.1 -f k -t 60 2>&1 | tail -n 1 > iperf.log')
+        h2.cmd('iperf -c 12.0.0.1 -f k 2>&1 | tail -n 1 > iperf.log')
         h2.cmd("cat iperf.log | tr -s ' ' | cut -d' ' -f7 | tail -n 1 > iperf2.log")
-        h1.cmd('killall iperf')
         with open('iperf2.log', 'r') as f:
             raw_data = f.read()
             avg += int(raw_data)
+            print '%d %d' % (int(raw_data), avg)
+
+    h1.cmd('killall iperf')
 
     avg /= num_tests
 
@@ -96,10 +99,10 @@ def run_test(logfile, num_tests, **link_opts):
                                avg)
 
 if __name__ == '__main__':
-    num_runs = 1
+    num_runs = 5
 #    run_test('test.log', 10, 1, bw=1, delay=1, loss=0, max_queue_size=16, use_htb=True)
     for bdw in range(10, 101, 10):
-        for dly in range(1, 51, 10):
+        for dly in range(0, 51, 10):
             run_test('test-%s.log' % (strftime('%Y-%m-%d_%H-%M-%S', localtime())),
                      num_runs,
                      bw=bdw,
