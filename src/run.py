@@ -35,7 +35,7 @@ class MPTCPTopo( Topo ):
 #        self.addLink( leftHost, switchDown, **link_opts )
 #        self.addLink( switchDown, rightHost, **link_opts )
 
-def run_test(logfile, num_tests, **link_opts):
+def run_test(logfile, num_tests, factor, **link_opts):
     logging.basicConfig(filename=logfile, level=logging.DEBUG)
 
     topo = MPTCPTopo(**link_opts)
@@ -44,10 +44,24 @@ def run_test(logfile, num_tests, **link_opts):
     h1 = net.hosts[0]
     h2 = net.hosts[1]
 
+    #BDP
+    delay = int(link_opts['delay'][:-2])
+    if delay == 0:
+        delay = 1
+    bdp = factor*link_opts['bw']*delay*125
+    mtu = 1500
+    sndbuf = bdp
+    rcvbuf = bdp
+    txqueuelen = bdp / mtu
+    print(sndbuf)
+    print(rcvbuf)
+
     # Setup first host
     h1.cmd('ip link set dev h1-eth0 multipath off')
-    h1.cmd('openvpn --daemon --remote 10.0.0.2 --proto udp --dev tun0 --ifconfig 12.0.0.1 12.0.0.2')
-    h1.cmd('openvpn --daemon --remote 10.0.0.2 --proto tcp-server --dev tun1 --ifconfig 13.0.0.1 13.0.0.2')
+    h1.cmd('openvpn --daemon --remote 10.0.0.2 --proto udp --dev tun0 --sndbuf %s --rcvbuf %s --txqueuelen %s --ifconfig 12.0.0.1 12.0.0.2', str(sndbuf),
+    str(rcvbuf), str(txqueuelen))
+    h1.cmd('openvpn --daemon --remote 10.0.0.2 --proto tcp-server --dev tun1 --sndbuf %s --rcvbuf %s --txqueuelen %s --ifconfig 13.0.0.1 13.0.0.2',
+    str(sndbuf), str(rcvbuf), str(txqueuelen))
     h1.cmd('ip link set dev tun0 multipath on')
     h1.cmd('ip link set dev tun1 multipath on')
     h1.cmd('ip rule add from 12.0.0.1 table 1')
@@ -59,8 +73,10 @@ def run_test(logfile, num_tests, **link_opts):
 
     # Setup second host
     h2.cmd('ip link set dev h2-eth0 multipath off')
-    h2.cmd('openvpn --daemon --remote 10.0.0.1 --proto udp --dev tun0 --ifconfig 12.0.0.2 12.0.0.1')
-    h2.cmd('openvpn --daemon --remote 10.0.0.1 --proto tcp-client --dev tun1 --ifconfig 13.0.0.2 13.0.0.1')
+    h2.cmd('openvpn --daemon --remote 10.0.0.1 --proto udp --dev tun0 --sndbuf %s --rcvbuf %s --txqueuelen %s --ifconfig 12.0.0.2 12.0.0.1', str(sndbuf),
+    str(rcvbuf), str(txqueuelen))
+    h2.cmd('openvpn --daemon --remote 10.0.0.1 --proto tcp-client --dev tun1 --sndbuf %s --rcvbuf %s --txqueuelen %s --ifconfig 13.0.0.2 13.0.0.1',
+    str(sndbuf), str(rcvbuf), str(txqueuelen))
     h2.cmd('ip link set dev tun0 multipath on')
     h2.cmd('ip link set dev tun1 multipath on')
     h2.cmd('ip rule add from 12.0.0.2 table 1')
@@ -83,7 +99,7 @@ def run_test(logfile, num_tests, **link_opts):
         with open('iperf2.log', 'r') as f:
             raw_data = f.read()
             avg += int(raw_data)
-            print '%d %d' % (int(raw_data), avg)
+#            print '%d %d' % (int(raw_data), avg)
 
     h1.cmd('killall iperf')
 
@@ -105,8 +121,42 @@ if __name__ == '__main__':
         for dly in range(0, 51, 10):
             run_test('test-%s.log' % (strftime('%Y-%m-%d_%H-%M-%S', localtime())),
                      num_runs,
+                     factor=1,
                      bw=bdw,
                      delay='%dms' % (dly),
                      use_htb=True)
+            
+            run_test('test-0.75-%s.log' % (strftime('%Y-%m-%d_%H-%M-%S',
+                     localtime())),
+                     num_runs,
+                     factor=0.75,
+                     bw=bdw,
+                     delay='%dms' % (dly),
+                     use_htb=True)
+
+            run_test('test-0.9-%s.log' % (strftime('%Y-%m-%d_%H-%M-%S',
+                     localtime())),
+                     num_runs,
+                     factor=0.9,
+                     bw=bdw,
+                     delay='%dms' % (dly),
+                     use_htb=True)
+
+            run_test('test-1.25-%s.log' % (strftime('%Y-%m-%d_%H-%M-%S',
+                     localtime())),
+                     num_runs,
+                     factor=1.25,
+                     bw=bdw,
+                     delay='%dms' % (dly),
+                     use_htb=True)
+
+            run_test('test-1.1-%s.log' % (strftime('%Y-%m-%d_%H-%M-%S',
+                     localtime())),
+                     num_runs,
+                     factor=1.1,
+                     bw=bdw,
+                     delay='%dms' % (dly),
+                     use_htb=True)
+
     remove('iperf.log')
     remove('iperf2.log')
