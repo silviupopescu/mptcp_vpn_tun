@@ -7,6 +7,7 @@ from mininet.net import Mininet
 from mininet.link import TCLink
 from mininet.node import OVSKernelSwitch
 from time import strftime, localtime, sleep
+from math import ceil
 
 #    -----------tun0------------
 #   /                           \
@@ -52,16 +53,14 @@ def run_test(logfile, num_tests, factor, **link_opts):
     mtu = 1500
     sndbuf = bdp
     rcvbuf = bdp
-    txqueuelen = bdp / mtu
+    txqueuelen = int(ceil(float(bdp) / mtu))
     print(sndbuf)
     print(rcvbuf)
 
     # Setup first host
     h1.cmd('ip link set dev h1-eth0 multipath off')
-    h1.cmd('openvpn --daemon --remote 10.0.0.2 --proto udp --dev tun0 --sndbuf %s --rcvbuf %s --txqueuelen %s --ifconfig 12.0.0.1 12.0.0.2', str(sndbuf),
-    str(rcvbuf), str(txqueuelen))
-    h1.cmd('openvpn --daemon --remote 10.0.0.2 --proto tcp-server --dev tun1 --sndbuf %s --rcvbuf %s --txqueuelen %s --ifconfig 13.0.0.1 13.0.0.2',
-    str(sndbuf), str(rcvbuf), str(txqueuelen))
+    h1.cmd('openvpn --daemon --remote 10.0.0.2 --proto udp --dev tun0 --sndbuf %d --rcvbuf %d --txqueuelen %d --ifconfig 12.0.0.1 12.0.0.2' % (sndbuf, rcvbuf, txqueuelen))
+    h1.cmd('openvpn --daemon --remote 10.0.0.2 --proto tcp-server --dev tun1 --sndbuf %d --rcvbuf %d --txqueuelen %d --ifconfig 13.0.0.1 13.0.0.2' % (sndbuf, rcvbuf, txqueuelen))
     h1.cmd('ip link set dev tun0 multipath on')
     h1.cmd('ip link set dev tun1 multipath on')
     h1.cmd('ip rule add from 12.0.0.1 table 1')
@@ -73,10 +72,8 @@ def run_test(logfile, num_tests, factor, **link_opts):
 
     # Setup second host
     h2.cmd('ip link set dev h2-eth0 multipath off')
-    h2.cmd('openvpn --daemon --remote 10.0.0.1 --proto udp --dev tun0 --sndbuf %s --rcvbuf %s --txqueuelen %s --ifconfig 12.0.0.2 12.0.0.1', str(sndbuf),
-    str(rcvbuf), str(txqueuelen))
-    h2.cmd('openvpn --daemon --remote 10.0.0.1 --proto tcp-client --dev tun1 --sndbuf %s --rcvbuf %s --txqueuelen %s --ifconfig 13.0.0.2 13.0.0.1',
-    str(sndbuf), str(rcvbuf), str(txqueuelen))
+    h2.cmd('openvpn --daemon --remote 10.0.0.1 --proto udp --dev tun0 --sndbuf %d --rcvbuf %d --txqueuelen %d --ifconfig 12.0.0.2 12.0.0.1' % (sndbuf, rcvbuf, txqueuelen))
+    h2.cmd('openvpn --daemon --remote 10.0.0.1 --proto tcp-client --dev tun1 --sndbuf %d --rcvbuf %d --txqueuelen %d --ifconfig 13.0.0.2 13.0.0.1' % (sndbuf, rcvbuf, txqueuelen))
     h2.cmd('ip link set dev tun0 multipath on')
     h2.cmd('ip link set dev tun1 multipath on')
     h2.cmd('ip rule add from 12.0.0.2 table 1')
@@ -91,7 +88,6 @@ def run_test(logfile, num_tests, factor, **link_opts):
     avg = 0.0
 
     h1.cmd('iperf -s -D')
-    sleep(1)
 
     for i in range(num_tests):
         h2.cmd('iperf -c 12.0.0.1 -f k 2>&1 | tail -n 1 > iperf.log')
@@ -116,44 +112,14 @@ def run_test(logfile, num_tests, factor, **link_opts):
 
 if __name__ == '__main__':
     num_runs = 5
-#    run_test('test.log', 10, 1, bw=1, delay=1, loss=0, max_queue_size=16, use_htb=True)
+    factor = 1.0
+    if len(sys.argv) == 2:
+        factor = float(sys.argv)
     for bdw in range(10, 101, 10):
         for dly in range(0, 51, 10):
-            run_test('test-%s.log' % (strftime('%Y-%m-%d_%H-%M-%S', localtime())),
+            run_test('test-%f-%s.log' % (factor, strftime('%Y-%m-%d_%H-%M-%S', localtime())),
                      num_runs,
-                     factor=1,
-                     bw=bdw,
-                     delay='%dms' % (dly),
-                     use_htb=True)
-            
-            run_test('test-0.75-%s.log' % (strftime('%Y-%m-%d_%H-%M-%S',
-                     localtime())),
-                     num_runs,
-                     factor=0.75,
-                     bw=bdw,
-                     delay='%dms' % (dly),
-                     use_htb=True)
-
-            run_test('test-0.9-%s.log' % (strftime('%Y-%m-%d_%H-%M-%S',
-                     localtime())),
-                     num_runs,
-                     factor=0.9,
-                     bw=bdw,
-                     delay='%dms' % (dly),
-                     use_htb=True)
-
-            run_test('test-1.25-%s.log' % (strftime('%Y-%m-%d_%H-%M-%S',
-                     localtime())),
-                     num_runs,
-                     factor=1.25,
-                     bw=bdw,
-                     delay='%dms' % (dly),
-                     use_htb=True)
-
-            run_test('test-1.1-%s.log' % (strftime('%Y-%m-%d_%H-%M-%S',
-                     localtime())),
-                     num_runs,
-                     factor=1.1,
+                     factor,
                      bw=bdw,
                      delay='%dms' % (dly),
                      use_htb=True)
