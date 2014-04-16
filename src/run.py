@@ -114,7 +114,7 @@ if __name__ == '__main__':
     num_runs = 5
     factor = 1.0
     if len(sys.argv) == 2:
-        factor = float(sys.argv)
+        factor = float(sys.argv[1])
     for bdw in range(10, 101, 10):
         for dly in range(0, 51, 10):
             run_test('test-%f-%s.log' % (factor, strftime('%Y-%m-%d_%H-%M-%S', localtime())),
