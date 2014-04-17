@@ -143,8 +143,7 @@ def run_test(args, **link_opts):
     for i in range(args.runs):
         h2.cmd('iperf -c 12.0.0.1 -f k -t %d 2>&1 | tail -n 1 > iperf.log'
                % (args.duration))
-        h2.cmd("""cat iperf.log | tr -s ' ' | cut -d' ' -f7 | tail -n 1 
-               > iperf2.log""")
+        h2.cmd("cat iperf.log | tr -s ' ' | cut -d' ' -f7 | tail -n 1  > iperf2.log")
         with open('iperf2.log', 'r') as f:
             raw_data = f.read()
             avg += int(raw_data)
