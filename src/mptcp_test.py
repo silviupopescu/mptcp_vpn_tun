@@ -148,7 +148,7 @@ if __name__ == '__main__':
     for bdw in range(args.bandwidth_from, args.bandwidth_to,
                      args.bandwidth_step):
         for dly in range(args.delay_from, args.delay_to, args.delay_step):
-            run_test(args.runs, bw=bdw, delay='%dms' % (dly), use_htb=True)
+            run_test(args, bw=bdw, delay='%dms' % (dly), use_htb=True)
 
     remove('iperf.log')
     remove('iperf2.log')
