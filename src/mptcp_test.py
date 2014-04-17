@@ -138,11 +138,15 @@ def run_test(args, **link_opts):
         h2.cmd('sysctl -w net.ipv4.tcp_congestion_control="cubic"')
         h2.cmd('sysctl -w net.mptcp.mptcp_enabled=0')
 
+    server_addr = '12.0.0.1'
+    if args.tcp:
+        server_addr = '13.0.0.1'
+
     avg = 0.0
     h1.cmd('iperf -s -D')
     for i in range(args.runs):
-        h2.cmd('iperf -c 12.0.0.1 -f k -t %d 2>&1 | tail -n 1 > iperf.log'
-               % (args.duration))
+        h2.cmd('iperf -c %s -f k -t %d 2>&1 | tail -n 1 > iperf.log'
+               % (server_addr, args.duration))
         h2.cmd("cat iperf.log | tr -s ' ' | cut -d' ' -f7 | tail -n 1  > iperf2.log")
         with open('iperf2.log', 'r') as f:
             raw_data = f.read()
