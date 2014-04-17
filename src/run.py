@@ -8,6 +8,7 @@ from mininet.link import TCLink
 from mininet.node import OVSKernelSwitch
 from time import strftime, localtime, sleep
 from math import ceil
+import argparse
 
 #    -----------tun0------------
 #   /                           \
@@ -36,8 +37,7 @@ class MPTCPTopo( Topo ):
 #        self.addLink( leftHost, switchDown, **link_opts )
 #        self.addLink( switchDown, rightHost, **link_opts )
 
-def run_test(logfile, num_tests, factor, **link_opts):
-    logging.basicConfig(filename=logfile, level=logging.DEBUG)
+def run_test(args, **link_opts):
 
     topo = MPTCPTopo(**link_opts)
     net = Mininet(topo, link=TCLink, switch=OVSKernelSwitch)
@@ -49,13 +49,11 @@ def run_test(logfile, num_tests, factor, **link_opts):
     delay = int(link_opts['delay'][:-2])
     if delay == 0:
         delay = 1
-    bdp = factor*link_opts['bw']*delay*125
+    bdp = args.factor * link_opts['bw'] * delay * 125
     mtu = 1500
     sndbuf = bdp
     rcvbuf = bdp
-    txqueuelen = int(ceil(float(bdp) / mtu))
-    print(sndbuf)
-    print(rcvbuf)
+    txqueuelen = 0 #int(ceil(float(bdp) / mtu))
 
     # Setup first host
     h1.cmd('ip link set dev h1-eth0 multipath off')
@@ -89,17 +87,16 @@ def run_test(logfile, num_tests, factor, **link_opts):
 
     h1.cmd('iperf -s -D')
 
-    for i in range(num_tests):
+    for i in range(args.runs):
         h2.cmd('iperf -c 12.0.0.1 -f k 2>&1 | tail -n 1 > iperf.log')
         h2.cmd("cat iperf.log | tr -s ' ' | cut -d' ' -f7 | tail -n 1 > iperf2.log")
         with open('iperf2.log', 'r') as f:
             raw_data = f.read()
             avg += int(raw_data)
-#            print '%d %d' % (int(raw_data), avg)
 
     h1.cmd('killall iperf')
 
-    avg /= num_tests
+    avg /= args.runs
 
     net.stop()
 
@@ -111,18 +108,46 @@ def run_test(logfile, num_tests, factor, **link_opts):
                                avg)
 
 if __name__ == '__main__':
-    num_runs = 5
-    factor = 1.0
-    if len(sys.argv) == 2:
-        factor = float(sys.argv[1])
-    for bdw in range(10, 101, 10):
-        for dly in range(0, 51, 10):
-            run_test('test-%f-%s.log' % (factor, strftime('%Y-%m-%d_%H-%M-%S', localtime())),
-                     num_runs,
-                     factor,
-                     bw=bdw,
-                     delay='%dms' % (dly),
-                     use_htb=True)
+    parser = argparse.ArgumentParser(description="""run MPTCP over OpenVPN
+                                     throughput tests""")
+    parser.add_argument('-f', '--factor', type=float, default=1.0,
+                        help='buffer size = factor * BDP')
+    parser.add_argument('-u', '--udp', action='store_true',
+                        help='create a UDP tunnel')
+    parser.add_argument('-t', '--tcp', action='store_true',
+                        help='create a TCP tunnel')
+    parser.add_argument('-nr', '--runs', type=int, default=5,
+                        help='how many times to run a test')
+    parser.add_argument('-c', '--congestion', choices=['cubic', 'olia'],
+                        default='olia', help='TCP congestion algorithm')
+    parser.add_argument('-bf', '--bandwidth-from', type=int, default=10,
+                        help='bandwidth start value (Mbps)')
+    parser.add_argument('-bs', '--bandwidth-step', type=int, default=10,
+                        help='bandwidth step value (Mbps)')
+    parser.add_argument('-bt', '--bandwidth-to', type=int, default=101,
+                        help='bandwidth stop value (Mbps)')
+    parser.add_argument('-df', '--delay-from', type=int, default=0,
+                        help='delay start value (ms)')
+    parser.add_argument('-ds', '--delay-step', type=int, default=10,
+                        help='delay step value (ms)')
+    parser.add_argument('-dt', '--delay-to', type=int, default=51,
+                        help='delay stop value (ms)')
+    parser.add_argument('-d', '--duration', type=int, default=10,
+                        help='iperf duration (s)')
+    args = parser.parse_args()
+
+    logfile = 'test-%s%s%f-%s.log' % ('udp-' if args.udp else '',
+                                      'tcp-' if args.tcp else '',
+                                      args.factor,
+                                      strftime('%Y-%m-%d_%H-%M-%S',
+                                               localtime()))
+    logging.basicConfig(filename=logfile,
+                        level=logging.DEBUG,
+                        format='%(message)s')
+
+    for bdw in range(args.bf, args.bt, args.bs):
+        for dly in range(args.df, args.dt, args.ds):
+            run_test(args.runs, bw=bdw, delay='%dms' % (dly), use_htb=True)
 
     remove('iperf.log')
     remove('iperf2.log')
