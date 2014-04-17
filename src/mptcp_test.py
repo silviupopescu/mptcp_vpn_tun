@@ -145,8 +145,9 @@ if __name__ == '__main__':
                         level=logging.DEBUG,
                         format='%(message)s')
 
-    for bdw in range(args.bf, args.bt, args.bs):
-        for dly in range(args.df, args.dt, args.ds):
+    for bdw in range(args.bandwidth_from, args.bandwidth_to,
+                     args.bandwidth_step):
+        for dly in range(args.delay_from, args.delay_to, args.delay_step):
             run_test(args.runs, bw=bdw, delay='%dms' % (dly), use_htb=True)
 
     remove('iperf.log')
