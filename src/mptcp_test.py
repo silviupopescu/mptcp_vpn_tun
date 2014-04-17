@@ -79,11 +79,11 @@ def setup_host(host, congestion_algo, **tun_opts):
         host.cmd('sysctl -w net.ipv4.tcp_wmem="%s"' % (tcp_wmem))
         proto = 'tcp-server' if tun_opts['tcp_server'] else 'tcp-client'
         tun_cmd = ("openvpn --daemon "
-                   "--remote %s " % (tun_opts['tcp_peer'])
-                   "--proto %s --dev tun1 " % (proto)
-                   "--sndbuf %d --rcvbuf %d " % (2*tun_opts['sndbuf'], 2*tun_opts['rcvbuf'])
-                   "--txqueuelen %d " % (tun_opts['txqueuelen'])
-                   "--ifconfig %s %s" % (tun_opts['tcp_src'], tun_opts['tcp_dst'])
+                   "--remote %s "
+                   "--proto %s --dev tun1 "
+                   "--sndbuf %d --rcvbuf %d "
+                   "--txqueuelen %d "
+                   "--ifconfig %s %s"
                    % (tun_opts['tcp_peer'], proto, 2*tun_opts['sndbuf'],
                       2*tun_opts['rcvbuf'], tun_opts['txqueuelen'],
                       tun_opts['tcp_src'], tun_opts['tcp_dst']))
