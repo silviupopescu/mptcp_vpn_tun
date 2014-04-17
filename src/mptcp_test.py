@@ -49,10 +49,12 @@ def setup_host(host, congestion_algo, **tun_opts):
         host.cmd('sysctl -w net.ipv4.udp_mem="%s"' % (udp_mem))
         host.cmd('sysctl -w net.ipv4.udp_rmem_min=%d' % (tun_opts['rcvbuf']))
         host.cmd('sysctl -w net.ipv4.udp_wmem_min=%d' % (tun_opts['sndbuf']))
-        tun_cmd = 'openvpn --daemon --remote %s --proto udp --dev tun0 --sndbuf %d --rcvbuf %d --txqueuelen %d --ifconfig %s %s'
-                    % (tun_opts['udp_peer'], tun_opts['sndbuf'],
-                       tun_opts['rcvbuf'], tun_opts['txqueuelen'],
-                       tun_opts['udp_src'], tun_opts['udp_dst'])
+        tun_cmd = ("openvpn --daemon "
+                   "--remote %s " % (tun_opts['udp_peer'])
+                   "--proto udp --dev tun0 "
+                   "--sndbuf %d --rcvbuf %d " % (tun_opts['sndbuf'], tun_opts['rcvbuf'])
+                   "--txqueuelen %d " % (tun_opts['txqueuelen'])
+                   "--ifconfig %s %s" % (tun_opts['udp_src'], tun_opts['udp_dst']))
         print tun_cmd
         host.cmd(tun_cmd)
         host.cmd('ip link set dev tun0 multipath on')
@@ -73,10 +75,12 @@ def setup_host(host, congestion_algo, **tun_opts):
                                int(2.2 * tun_opts['sndbuf']))
         host.cmd('sysctl -w net.ipv4.tcp_wmem="%s"' % (tcp_wmem))
         proto = 'tcp-server' if tun_opts['tcp_server'] else 'tcp-client'
-        tun_cmd = 'openvpn --daemon --remote %s --proto %s --dev tun1 --sndbuf %d --rcvbuf %d --txqueuelen %d --ifconfig %s %s'
-                    % (tun_opts['tcp_peer'], proto, 2*tun_opts['sndbuf'],
-                       2*tun_opts['rcvbuf'], tun_opts['txqueuelen'],
-                       tun_opts['tcp_src'], tun_opts['tcp_dst'])
+        tun_cmd = ("openvpn --daemon "
+                   "--remote %s " % (tun_opts['tcp_peer'])
+                   "--proto %s --dev tun1 " % (proto)
+                   "--sndbuf %d --rcvbuf %d " % (2*tun_opts['sndbuf'], 2*tun_opts['rcvbuf'])
+                   "--txqueuelen %d " % (tun_opts['txqueuelen'])
+                   "--ifconfig %s %s" % (tun_opts['tcp_src'], tun_opts['tcp_dst']))
         print tun_cmd
         host.cmd(tun_cmd)
         host.cmd('ip link set dev tun1 multipath on')
