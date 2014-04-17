@@ -43,9 +43,6 @@ def setup_host(host, congestion_algo, **tun_opts):
     host.cmd('sysctl -w net.ipv4.tcp_congestion_control=%s' % congestion_algo)
     host.cmd('sysctl -w net.core.rmem_max=%d'% (int(2.2*tun_opts['rcvbuf'])))
     host.cmd('sysctl -w net.core.wmem_max=%d'% (int(2.2*tun_opts['sndbuf'])))
-    if not(tun_opts['udp'] and tun_opts['tcp']):
-        host.cmd('sysctl -w net.ipv4.tcp_congestion_control="cubic"')
-        host.cmd('sysctl -w net.mptcp.mptcp_enabled=0')
     if tun_opts['udp']:
         bdp_pages = int(1.1 * tun_opts['sndbuf'] / 4096)
         udp_mem='%d %d %d' % (bdp_pages, bdp_pages, bdp_pages)
@@ -105,6 +102,8 @@ def run_test(args, **link_opts):
     #rcvbuf = bdp
     #txqueuelen = 0 #int(ceil(float(bdp) / mtu))
 
+    net.start()
+
     # Setup first host
     setup_host(h1, args.congestion, sndbuf=bdp, rcvbuf=bdp, txqueuelen=0,
                udp=args.udp,
@@ -121,12 +120,14 @@ def run_test(args, **link_opts):
                tcp_peer='10.0.0.1', tcp_src='13.0.0.2', tcp_dst='13.0.0.1',
                tcp_server=False)
 
-    net.start()
+    if not(args.udp and args.tcp):
+        h1.cmd('sysctl -w net.ipv4.tcp_congestion_control="cubic"')
+        h1.cmd('sysctl -w net.mptcp.mptcp_enabled=0')
+        h2.cmd('sysctl -w net.ipv4.tcp_congestion_control="cubic"')
+        h2.cmd('sysctl -w net.mptcp.mptcp_enabled=0')
 
     avg = 0.0
-
     h1.cmd('iperf -s -D')
-
     for i in range(args.runs):
         h2.cmd('iperf -c 12.0.0.1 -f k -t %d 2>&1 | tail -n 1 > iperf.log'
                % (args.duration))
@@ -135,9 +136,7 @@ def run_test(args, **link_opts):
         with open('iperf2.log', 'r') as f:
             raw_data = f.read()
             avg += int(raw_data)
-
     h1.cmd('killall iperf')
-
     avg /= args.runs
 
     net.stop()
