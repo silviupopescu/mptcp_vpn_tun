@@ -37,6 +37,56 @@ class MPTCPTopo( Topo ):
 #        self.addLink( leftHost, switchDown, **link_opts )
 #        self.addLink( switchDown, rightHost, **link_opts )
 
+def setup_host(host, congestion_algo, **tun_opts):
+    host.cmd('ip link set dev %s-eth0 multipath off' % host.name)
+    host.cmd('sysctl -w net.mptcp.mptcp_checksum=0')
+    host.cmd('sysctl -w net.ipv4.tcp_congestion_control=%s' % congestion_algo)
+    host.cmd('sysctl -w net.core.rmem_max=%d'% (int(2.2*tun_opts['rcvbuf'])))
+    host.cmd('sysctl -w net.core.wmem_max=%d'% (int(2.2*tun_opts['sndbuf'])))
+    if not(tun_opts['udp'] and tun_opts['tcp']):
+        host.cmd('sysctl -w net.ipv4.tcp_congestion_control="cubic"')
+        host.cmd('sysctl -w net.mptcp.mptcp_enabled=0')
+    if tun_opts['udp']:
+        bdp_pages = int(1.1 * tun_opts['sndbuf'] / 4096)
+        udp_mem='%d %d %d' % (bdp_pages, bdp_pages, bdp_pages)
+        host.cmd('sysctl -w net.ipv4.udp_mem="%s"' % (udp_mem))
+        host.cmd('sysctl -w net.ipv4.udp_rmem_min=%d' % (tun_opts['rcvbuf']))
+        host.cmd('sysctl -w net.ipv4.udp_wmem_min=%d' % (tun_opts['sndbuf']))
+        host.cmd("""openvpn --daemon --remote %s --proto udp --dev tun0
+                 --sndbuf %d --rcvbuf %d --txqueuelen %d --ifconfig %s %s"""
+                 % (tun_opts['udp_peer'], tun_opts['sndbuf'],
+                    tun_opts['rcvbuf'], tun_opts['txqueuelen'],
+                    tun_opts['udp_src'], tun_opts['udp_dst']))
+        host.cmd('ip link set dev tun0 multipath on')
+        host.cmd('ip rule add from %s table 1' % (tun_opts['udp_src']))
+        host.cmd('ip route add %s/32 dev tun0 scope link table 1'
+                 % (tun_opts['udp_src']))
+        host.cmd('ip route add default dev tun0 table 1')
+    if tun_opts['tcp']:
+        bdp_pages = int(1.1 * 2 * tun_opts['sndbuf'] / 4096) # 2x for TCP
+        tcp_mem='%d %d %d' % (bdp_pages, bdp_pages, bdp_pages)
+        host.cmd('sysctl -w net.ipv4.tcp_mem="%s"' % (tcp_mem))
+        tcp_rmem='%d %d %d' % (int(2.2 * tun_opts['rcvbuf']),
+                               int(2.2 * tun_opts['rcvbuf']),
+                               int(2.2 * tun_opts['rcvbuf']))
+        host.cmd('sysctl -w net.ipv4.tcp_rmem="%s"' % (tcp_rmem))
+        tcp_wmem='%d %d %d' % (int(2.2 * tun_opts['sndbuf']),
+                               int(2.2 * tun_opts['sndbuf']),
+                               int(2.2 * tun_opts['sndbuf']))
+        host.cmd('sysctl -w net.ipv4.tcp_wmem="%s"' % (tcp_wmem))
+        proto = 'tcp-server' if tun_opts['tcp_server'] else 'tcp-client'
+        host.cmd("""openvpn --daemon --remote %s --proto %s --dev tun1
+                 --sndbuf %d --rcvbuf %d --txqueuelen %d --ifconfig %s %s"""
+                 % (tun_opts['tcp_peer'], proto, 2*tun_opts['sndbuf'],
+                    2*tun_opts['rcvbuf'], tun_opts['txqueuelen'],
+                    tun_opts['tcp_src'], tcp_opts['tcp_dst']))
+        host.cmd('ip link set dev tun1 multipath on')
+        host.cmd('ip rule add from %s table 2' % (tun_opts['tcp_src']))
+        host.cmd('ip route add %s/32 dev tun1 scope link table 2'
+                 % (tun_opts['tcp_src']))
+        host.cmd('ip route add default dev tun1 table 2')
+
+
 def run_test(args, **link_opts):
 
     topo = MPTCPTopo(**link_opts)
@@ -50,36 +100,26 @@ def run_test(args, **link_opts):
     if delay == 0:
         delay = 1
     bdp = args.factor * link_opts['bw'] * delay * 125
-    mtu = 1500
-    sndbuf = bdp
-    rcvbuf = bdp
-    txqueuelen = 0 #int(ceil(float(bdp) / mtu))
+    #mtu = 1500
+    #sndbuf = bdp
+    #rcvbuf = bdp
+    #txqueuelen = 0 #int(ceil(float(bdp) / mtu))
 
     # Setup first host
-    h1.cmd('ip link set dev h1-eth0 multipath off')
-    h1.cmd('openvpn --daemon --remote 10.0.0.2 --proto udp --dev tun0 --sndbuf %d --rcvbuf %d --txqueuelen %d --ifconfig 12.0.0.1 12.0.0.2' % (sndbuf, rcvbuf, txqueuelen))
-    h1.cmd('openvpn --daemon --remote 10.0.0.2 --proto tcp-server --dev tun1 --sndbuf %d --rcvbuf %d --txqueuelen %d --ifconfig 13.0.0.1 13.0.0.2' % (sndbuf, rcvbuf, txqueuelen))
-    h1.cmd('ip link set dev tun0 multipath on')
-    h1.cmd('ip link set dev tun1 multipath on')
-    h1.cmd('ip rule add from 12.0.0.1 table 1')
-    h1.cmd('ip route add 12.0.0.0/32 dev tun0 scope link table 1')
-    h1.cmd('ip route add default dev tun0 table 1')
-    h1.cmd('ip rule add from 13.0.0.1 table 2')
-    h1.cmd('ip route add 13.0.0.0/32 dev tun1 scope link table 2')
-    h1.cmd('ip route add default dev tun1 table 2')
+    setup_host(h1, args.congestion, sndbuf=bdp, rcvbuf=bdp, txqueuelen=0,
+               udp=args.udp,
+               udp_peer='10.0.0.2', udp_src='12.0.0.1', udp_dst='12.0.0.2',
+               tcp=args.tcp,
+               tcp_peer='10.0.0.2', tcp_src='13.0.0.1', tcp_dst='13.0.0.2',
+               tcp_server=True)
 
     # Setup second host
-    h2.cmd('ip link set dev h2-eth0 multipath off')
-    h2.cmd('openvpn --daemon --remote 10.0.0.1 --proto udp --dev tun0 --sndbuf %d --rcvbuf %d --txqueuelen %d --ifconfig 12.0.0.2 12.0.0.1' % (sndbuf, rcvbuf, txqueuelen))
-    h2.cmd('openvpn --daemon --remote 10.0.0.1 --proto tcp-client --dev tun1 --sndbuf %d --rcvbuf %d --txqueuelen %d --ifconfig 13.0.0.2 13.0.0.1' % (sndbuf, rcvbuf, txqueuelen))
-    h2.cmd('ip link set dev tun0 multipath on')
-    h2.cmd('ip link set dev tun1 multipath on')
-    h2.cmd('ip rule add from 12.0.0.2 table 1')
-    h2.cmd('ip route add 12.0.0.0/32 dev tun0 scope link table 1')
-    h2.cmd('ip route add default dev tun0 table 1')
-    h2.cmd('ip rule add from 13.0.0.2 table 2')
-    h2.cmd('ip route add 13.0.0.0/32 dev tun1 scope link table 2')
-    h2.cmd('ip route add default dev tun1 table 2')
+    setup_host(h2, args.congestion, sndbuf=bdp, rcvbuf=bdp, txqueuelen=0,
+               udp=args.udp,
+               udp_peer='10.0.0.1', udp_src='12.0.0.2', udp_dst='12.0.0.1',
+               tcp=args.tcp,
+               tcp_peer='10.0.0.1', tcp_src='13.0.0.2', tcp_dst='13.0.0.1',
+               tcp_server=False)
 
     net.start()
 
@@ -88,8 +128,10 @@ def run_test(args, **link_opts):
     h1.cmd('iperf -s -D')
 
     for i in range(args.runs):
-        h2.cmd('iperf -c 12.0.0.1 -f k 2>&1 | tail -n 1 > iperf.log')
-        h2.cmd("cat iperf.log | tr -s ' ' | cut -d' ' -f7 | tail -n 1 > iperf2.log")
+        h2.cmd('iperf -c 12.0.0.1 -f k -t %d 2>&1 | tail -n 1 > iperf.log'
+               % (args.duration))
+        h2.cmd("""cat iperf.log | tr -s ' ' | cut -d' ' -f7 | tail -n 1 
+               > iperf2.log""")
         with open('iperf2.log', 'r') as f:
             raw_data = f.read()
             avg += int(raw_data)
@@ -134,7 +176,11 @@ if __name__ == '__main__':
                         help='delay stop value (ms)')
     parser.add_argument('-d', '--duration', type=int, default=10,
                         help='iperf duration (s)')
+    parser.add_argument('-v', '--version', action='store_true', help='version')
     args = parser.parse_args()
+
+    if args.version:
+        print 'MPTCP/OpenVPN tester v2.0'
 
     logfile = 'test-%s%s%f-%s.log' % ('udp-' if args.udp else '',
                                       'tcp-' if args.tcp else '',
