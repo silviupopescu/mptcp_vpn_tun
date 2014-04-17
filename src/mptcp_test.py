@@ -79,7 +79,7 @@ def setup_host(host, congestion_algo, **tun_opts):
                  --sndbuf %d --rcvbuf %d --txqueuelen %d --ifconfig %s %s"""
                  % (tun_opts['tcp_peer'], proto, 2*tun_opts['sndbuf'],
                     2*tun_opts['rcvbuf'], tun_opts['txqueuelen'],
-                    tun_opts['tcp_src'], tcp_opts['tcp_dst']))
+                    tun_opts['tcp_src'], tun_opts['tcp_dst']))
         host.cmd('ip link set dev tun1 multipath on')
         host.cmd('ip rule add from %s table 2' % (tun_opts['tcp_src']))
         host.cmd('ip route add %s/32 dev tun1 scope link table 2'
