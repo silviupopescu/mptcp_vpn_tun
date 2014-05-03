@@ -94,6 +94,10 @@ def setup_host(host, congestion_algo, **tun_opts):
         host.cmd('ip route add %s/32 dev tun1 scope link table 2'
                  % (tun_opts['tcp_src']))
         host.cmd('ip route add default dev tun1 table 2')
+    host.cmd('echo 0 > /proc/sys/net/ipv4/inet_peer_maxttl')
+    host.cmd('echo 0 > /proc/sys/net/ipv4/inet_peer_minttl')
+    host.cmd('echo 0 > /proc/sys/net/ipv4/inet_peer_threshold')
+    host.cmd('echo 1 > /proc/sys/net/ipv4/route/flush')
 
 
 def run_test(args, **link_opts):
