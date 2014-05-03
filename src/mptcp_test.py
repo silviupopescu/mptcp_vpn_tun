@@ -180,17 +180,17 @@ if __name__ == '__main__':
                         help='how many times to run a test')
     parser.add_argument('-c', '--congestion', choices=['cubic', 'olia'],
                         default='olia', help='TCP congestion algorithm')
-    parser.add_argument('-bf', '--bandwidth-from', type=int, default=10,
+    parser.add_argument('-bf', '--bandwidth-from', type=int, default=100,
                         help='bandwidth start value (Mbps)')
-    parser.add_argument('-bs', '--bandwidth-step', type=int, default=10,
+    parser.add_argument('-bs', '--bandwidth-step', type=int, default=-10,
                         help='bandwidth step value (Mbps)')
-    parser.add_argument('-bt', '--bandwidth-to', type=int, default=101,
+    parser.add_argument('-bt', '--bandwidth-to', type=int, default=9,
                         help='bandwidth stop value (Mbps)')
-    parser.add_argument('-df', '--delay-from', type=int, default=0,
+    parser.add_argument('-df', '--delay-from', type=int, default=50,
                         help='delay start value (ms)')
-    parser.add_argument('-ds', '--delay-step', type=int, default=10,
+    parser.add_argument('-ds', '--delay-step', type=int, default=-10,
                         help='delay step value (ms)')
-    parser.add_argument('-dt', '--delay-to', type=int, default=51,
+    parser.add_argument('-dt', '--delay-to', type=int, default=-1,
                         help='delay stop value (ms)')
     parser.add_argument('-d', '--duration', type=int, default=10,
                         help='iperf duration (s)')
