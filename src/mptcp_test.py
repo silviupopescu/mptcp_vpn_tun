@@ -30,9 +30,10 @@ class MPTCPTopo( Topo ):
 #        switchDown = self.addSwitch('s2')
 
         # Add links for up
-        self.addLink( leftHost, switchUp, **link_opts )
-        self.addLink( switchUp, rightHost, **link_opts )
-
+        #self.addLink( leftHost, switchUp, **link_opts )
+        #self.addLink( switchUp, rightHost, **link_opts )
+	self.addLink( leftHost, switchUp )
+	self.addLink( switchUp, rightHost )
         # Add links for down
 #        self.addLink( leftHost, switchDown, **link_opts )
 #        self.addLink( switchDown, rightHost, **link_opts )
@@ -43,6 +44,7 @@ def setup_host(host, congestion_algo, **tun_opts):
     host.cmd('sysctl -w net.ipv4.tcp_congestion_control=%s' % congestion_algo)
     host.cmd('sysctl -w net.core.rmem_max=%d'% (int(2.2*tun_opts['rcvbuf'])))
     host.cmd('sysctl -w net.core.wmem_max=%d'% (int(2.2*tun_opts['sndbuf'])))
+
     if tun_opts['udp']:
         bdp_pages = int(1.1 * tun_opts['sndbuf'] / 4096)
         udp_mem='%d %d %d' % (bdp_pages, bdp_pages, bdp_pages)
@@ -65,6 +67,10 @@ def setup_host(host, congestion_algo, **tun_opts):
         host.cmd('ip route add %s/32 dev tun0 scope link table 1'
                  % (tun_opts['udp_src']))
         host.cmd('ip route add default dev tun0 table 1')
+	host.cmd('ipfw add pipe 1 from %s to %s' % (tun_opts['udp_src'], tun_opts['udp_dst']))
+	host.cmd('ipfw add pipe 2 from %s to %s' % (tun_opts['udp_dst'], tun_opts['udp_src']))
+	host.cmd('ipfw pipe 1 config delay %sms bw %sMbit/s' % (tun_opts['ipfw_delay'], tun_opts['ipfw_bw']))
+	host.cmd('ipfw pipe 2 config delay %sms bw %sMbit/s' % (tun_opts['ipfw_delay'], tun_opts['ipfw_bw']))
     if tun_opts['tcp']:
         bdp_pages = int(1.1 * 2 * tun_opts['sndbuf'] / 4096) # 2x for TCP
         tcp_mem='%d %d %d' % (bdp_pages, bdp_pages, bdp_pages)
@@ -94,6 +100,11 @@ def setup_host(host, congestion_algo, **tun_opts):
         host.cmd('ip route add %s/32 dev tun1 scope link table 2'
                  % (tun_opts['tcp_src']))
         host.cmd('ip route add default dev tun1 table 2')
+	host.cmd('ipfw add pipe 1 from %s to %s' % (tun_opts['tcp_src'], tun_opts['tcp_dst']))
+	host.cmd('ipfw add pipe 2 from %s to %s' % (tun_opts['tcp_dst'], tun_opts['tcp_src']))
+	host.cmd('ipfw pipe 1 config delay %sms bw %sMbit/s' % (tun_opts['ipfw_delay'], tun_opts['ipfw_bw']))
+	host.cmd('ipfw pipe 2 config delay %sms bw %sMbit/s' % (tun_opts['ipfw_delay'], tun_opts['ipfw_bw']))
+
     host.cmd('echo 0 > /proc/sys/net/ipv4/inet_peer_maxttl')
     host.cmd('echo 0 > /proc/sys/net/ipv4/inet_peer_minttl')
     host.cmd('echo 0 > /proc/sys/net/ipv4/inet_peer_threshold')
@@ -126,7 +137,7 @@ def run_test(args, **link_opts):
                udp_peer='10.0.0.2', udp_src='12.0.0.1', udp_dst='12.0.0.2',
                tcp=args.tcp,
                tcp_peer='10.0.0.2', tcp_src='13.0.0.1', tcp_dst='13.0.0.2',
-               tcp_server=True)
+               tcp_server=True, ipfw_delay=delay, ipfw_bw=link_opts['bw'])
 
     # Setup second host
     setup_host(h2, args.congestion, sndbuf=bdp, rcvbuf=bdp, txqueuelen=0,
@@ -134,7 +145,7 @@ def run_test(args, **link_opts):
                udp_peer='10.0.0.1', udp_src='12.0.0.2', udp_dst='12.0.0.1',
                tcp=args.tcp,
                tcp_peer='10.0.0.1', tcp_src='13.0.0.2', tcp_dst='13.0.0.1',
-               tcp_server=False)
+               tcp_server=False, ipfw_delay=delay, ipfw_bw=link_opts['bw'])
 
     if not(args.udp and args.tcp):
         h1.cmd('sysctl -w net.ipv4.tcp_congestion_control="cubic"')
@@ -212,7 +223,7 @@ if __name__ == '__main__':
     for bdw in range(args.bandwidth_from, args.bandwidth_to,
                      args.bandwidth_step):
         for dly in range(args.delay_from, args.delay_to, args.delay_step):
-            run_test(args, bw=bdw, delay='%dms' % (dly), use_htb=True)
+            run_test(args, bw=bdw, delay='%dms' % (dly), use_htb=False)
 
     remove('iperf.log')
     remove('iperf2.log')
