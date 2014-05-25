@@ -1,6 +1,6 @@
 import sys
 import logging
-from os import remove
+import os
 from time import strftime, localtime, sleep
 from math import ceil
 import argparse
@@ -16,7 +16,8 @@ import subprocess
 def setup_core(algo, bdw, dly, factor, scheduler):
     subprocess.call(['ip', 'link', 'set', 'dev', 'eth0', 'multipath', 'off'])
     subprocess.call(['sysctl', '-w', 'net.mptcp.mptcp_checksum=0'])
-    subprocess.call(['sysctl', '-w', 'net.ipv4.tcp_congestion_control=%s' % algo])
+    os.system('sysctl -w net.ipv4.tcp_congestion_control="%s"' % algo)
+#    subprocess.call(['sysctl', '-w', 'net.ipv4.tcp_congestion_control=%s' % algo])
     buffer_size = int(factor * bdw * dly * 125) # 125 converts from Mbps*ms to bytes
     subprocess.call(['sysctl', '-w', 'net.core.rmem_max=%d' % buffer_size])
     subprocess.call(['sysctl', '-w', 'net.core.wmem_max=%d' % buffer_size])
@@ -44,7 +45,8 @@ def setup_udp(host, bdw, dly, txqueuelen, factor):
     bdp = int(factor * bdw * dly * 125)
     bdp_pages = bdp / 4096
     udp_mem = '%d %d %d' % (bdp_pages, bdp_pages, bdp_pages) # min, pressure, max
-    subprocess.call(['sysctl', '-w', 'net.ipv4.udp_mem="%s"' % udp_mem])
+    os.system('sysctl -w net.ipv4.udp_mem="%s"' % udp_mem)
+#    subprocess.call(['sysctl', '-w', 'net.ipv4.udp_mem="%s"' % udp_mem])
     subprocess.call(['sysctl', '-w', 'net.ipv4.udp_rmem_min=%d' % bdp])
     subprocess.call(['sysctl', '-w', 'net.ipv4.udp_wmem_min=%d' % bdp])
     peer = '10.42.130.134' if host == 'smother1' else '10.42.129.134'
@@ -64,11 +66,14 @@ def setup_tcp(host, bdw, dly, txqueuelen, factor):
     bdp = int(factor * bdw * dly * 125)
     bdp_pages = bdp / 4096
     tcp_mem = '%d %d %d' % (bdp_pages, bdp_pages, bdp_pages) # min, pressure, max
-    subprocess.call(['sysctl', '-w', 'net.ipv4.tcp_mem="%s"' % tcp_mem])
+    os.system('sysctl -w net.ipv4.tcp_mem="%s"' % tcp_mem)
+#    subprocess.call(['sysctl', '-w', 'net.ipv4.tcp_mem="%s"' % tcp_mem])
     tcp_rmem = '%d %d %d' % (bdp, bdp, bdp) # min, default, max
-    subprocess.call(['sysctl', '-w', 'net.ipv4.tcp_rmem="%s"' % tcp_rmem])
+    os.system('sysctl -w net.ipv4.tcp_rmem="%s"' % tcp_rmem)
+#    subprocess.call(['sysctl', '-w', 'net.ipv4.tcp_rmem="%s"' % tcp_rmem])
     tcp_wmem = '%d %d %d' % (bdp, bdp, bdp) # min, default, max
-    subprocess.call(['sysctl', '-w', 'net.ipv4.tcp_wmem="%s"' % tcp_wmem])
+    os.system('sysctl -w net.ipv4.tcp_wmem="%s"' % tcp_wmem)
+#    subprocess.call(['sysctl', '-w', 'net.ipv4.tcp_wmem="%s"' % tcp_wmem])
     proto = 'tcp-server' if host == 'smother1' else 'tcp-client'
     peer = '10.42.130.134' if host == 'smother1' else '10.42.129.134'
     src = '13.0.0.1' if host == 'smother1' else '13.0.0.2'
@@ -96,7 +101,8 @@ def run_test(args, bdw, dly):
     setup_host(host, args.congestion, bdw, dly, 0, args.udp, args.tcp, args)
 
     if (not(args.udp and args.tcp)):
-        subprocess.call(['sysctl', '-w', 'net.ipv4.tcp_congestion_control="cubic"'])
+        os.system('sysctl -w net.ipv4.tcp_congestion_control="cubic"')
+#        subprocess.call(['sysctl', '-w', 'net.ipv4.tcp_congestion_control="cubic"'])
         subprocess.call(['sysctl', '-w', 'net.mptcp.mptcp_enabled=0'])
 
     server_addr = '12.0.0.1'
