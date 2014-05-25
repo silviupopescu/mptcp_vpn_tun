@@ -44,7 +44,7 @@ def setup_udp(host, bdw, dly, txqueuelen, factor):
     bdp = int(factor * bdw * dly * 125)
     bdp_pages = bdp / 4096
     udp_mem = '%d %d %d' % (bdp_pages, bdp_pages, bdp_pages) # min, pressure, max
-    subprocess.call('sysctl', '-w', 'net.ipv4.udp_mem=%s' % udp_mem)
+    subprocess.call('sysctl', '-w', 'net.ipv4.udp_mem="%s"' % udp_mem)
     subprocess.call('sysctl', '-w', 'net.ipv4.udp_rmem_min=%d' % bdp)
     subprocess.call('sysctl', '-w', 'net.ipv4.udp_wmem_min=%d' % bdp)
     peer = '10.42.130.134' if host == 'smother1' else '10.42.129.134'
@@ -63,11 +63,11 @@ def setup_tcp(host, bdw, dly, txqueuelen, factor):
     bdp = int(factor * bdw * dly * 125)
     bdp_pages = bdp / 4096
     tcp_mem = '%d %d %d' % (bdp_pages, bdp_pages, bdp_pages) # min, pressure, max
-    subprocess.call('sysctl', '-w', 'net.ipv4.tcp_mem=%s' % tcp_mem)
+    subprocess.call('sysctl', '-w', 'net.ipv4.tcp_mem="%s"' % tcp_mem)
     tcp_rmem = '%d %d %d' % (bdp, bdp, bdp) # min, default, max
-    subprocess.call('sysctl', '-w', 'net.ipv4.tcp_rmem=%s' % tcp_rmem)
+    subprocess.call('sysctl', '-w', 'net.ipv4.tcp_rmem="%s"' % tcp_rmem)
     tcp_wmem = '%d %d %d' % (bdp, bdp, bdp) # min, default, max
-    subprocess.call('sysctl', '-w', 'net.ipv4.tcp_wmem=%s' % tcp_wmem)
+    subprocess.call('sysctl', '-w', 'net.ipv4.tcp_wmem="%s"' % tcp_wmem)
     proto = 'tcp-server' if host == 'smother1' else 'tcp-client'
     peer = '10.42.130.134' if host == 'smother1' else '10.42.129.134'
     src = '13.0.0.1' if host == 'smother1' else '13.0.0.2'
