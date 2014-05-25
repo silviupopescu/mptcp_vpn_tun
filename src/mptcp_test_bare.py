@@ -108,7 +108,7 @@ def run_test(args, bdw, dly):
         for i in range(args.runs):
             p1 = subprocess.Popen(('iperf', '-c', server_addr, '-f', 'k', '-t',
                                    args.duration), stderr=subprocess.PIPE)
-            p2 = subprocess.Popen(('tail', '-n', '1'). stdin=p1.stderr,
+            p2 = subprocess.Popen(('tail', '-n', '1'), stdin=p1.stderr,
                                   stdout=subprocess.PIPE)
             p3 = subprocess.Popen(('tr', '-s', '" "'), stdin=p2.stdout,
                                   stdout=subprocess.PIPE)
