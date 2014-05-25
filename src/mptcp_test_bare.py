@@ -118,7 +118,7 @@ def run_test(args, bdw, dly):
                                   stdout=subprocess.PIPE)
             p5 = subprocess.Popen(('tail', '-n', '1'), stdin=p4.stdout,
                                   stdout=subprocess.PIPE)
-            avg += float(p5.communicate().strip())
+            avg += float(p5.communicate()[0].strip())
         avg /= args.runs
         subprocess.call(['ssh', '-i', '~/default-key.key', 'root@10.42.129.134',
                          '"killall iperf"'])
