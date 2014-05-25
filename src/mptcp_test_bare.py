@@ -120,7 +120,7 @@ def run_test(args, bdw, dly):
         avg /= args.runs
         subprocess.call(['ssh', '-i', '~/default-key.key', 'root@10.42.129.134',
                          '"killall iperf"'])
-        logging.info('%d %d %f' % (dly, bdw, avg)
+        logging.info('%d %d %f' % (dly, bdw, avg))
         print '%d %d %f' % (dly, bdw, avg)
 
 if __name__ == '__main__':
