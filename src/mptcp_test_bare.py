@@ -115,8 +115,8 @@ def run_test(args, bdw, dly):
         avg = 0.0
         for i in range(args.runs):
             p1 = subprocess.Popen(('iperf', '-c', server_addr, '-f', 'k', '-t',
-                                   str(args.duration)), stderr=subprocess.PIPE)
-            out = p1.communicate()[0].split('\n')[-1].split()[6]
+                                   str(args.duration)), stdout=subprocess.PIPE)
+            out = p1.communicate()[0].split('\n')[-2].split()[6]
             avg += float(out)
         avg /= args.runs
         subprocess.call(['ssh', '-i', '~/default-key.key', 'root@10.42.129.134',
