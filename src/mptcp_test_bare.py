@@ -110,20 +110,8 @@ def run_test(args, bdw, dly):
         for i in range(args.runs):
             p1 = subprocess.Popen(('iperf', '-c', server_addr, '-f', 'k', '-t',
                                    str(args.duration)), stderr=subprocess.PIPE)
-            p1.wait()
-            p2 = subprocess.Popen(('tail', '-n', '1'), stdin=p1.stderr,
-                                  stdout=subprocess.PIPE)
-            p2.wait()
-            p3 = subprocess.Popen(('tr', '-s', '" "'), stdin=p2.stdout,
-                                  stdout=subprocess.PIPE)
-            p3.wait()
-            p4 = subprocess.Popen(('cut', '-d" "', '-f7'), stdin=p3.stdout,
-                                  stdout=subprocess.PIPE)
-            p4.wait()
-            p5 = subprocess.Popen(('tail', '-n', '1'), stdin=p4.stdout,
-                                  stdout=subprocess.PIPE)
-            p5.wait()
-            avg += float(p5.communicate()[0].strip())
+            out = p1.communicate()[0].split('\n')[-1].split()[6]
+            avg += float(out)
         avg /= args.runs
         subprocess.call(['ssh', '-i', '~/default-key.key', 'root@10.42.129.134',
                          '"killall iperf"'])
