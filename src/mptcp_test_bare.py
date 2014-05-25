@@ -104,7 +104,7 @@ def run_test(args, bdw, dly):
         server_addr = '13.0.0.1'
 
     if host == 'smother1':
-        subprocess.call(['iperf -s'])
+        subprocess.call(['iperf', '-s'])
     else:
         avg = 0.0
         for i in range(args.runs):
