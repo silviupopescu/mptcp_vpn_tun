@@ -34,12 +34,32 @@ def setup_core(algo, bdw, dly, factor, scheduler):
     if dly != 0:
         subprocess.call(['tc', 'qdisc', 'add', 'dev', 'eth0', 'parent', '1:1',
                          'handle', '12', 'netem', 'delay', '%dms' % dly])
+    # filter iperf (5001)
     subprocess.call(['tc', 'filter', 'add', 'dev', 'eth0', 'protocol', 'ip',
                      'parent', '1:', 'prio', '1', 'u32', 'match', 'ip',
                      'dport', '5001', '0xffff', 'flowid', '1:1'])
     subprocess.call(['tc', 'filter', 'add', 'dev', 'eth0', 'protocol', 'ip',
                      'parent', '1:', 'prio', '1', 'u32', 'match', 'ip',
                      'sport', '5001', '0xffff', 'flowid', '1:1'])
+    # filter openvpn(443, 943, 1194)
+    subprocess.call(['tc', 'filter', 'add', 'dev', 'eth0', 'protocol', 'ip',
+                     'parent', '1:', 'prio', '1', 'u32', 'match', 'ip',
+                     'dport', '443', '0xffff', 'flowid', '1:1'])
+    subprocess.call(['tc', 'filter', 'add', 'dev', 'eth0', 'protocol', 'ip',
+                     'parent', '1:', 'prio', '1', 'u32', 'match', 'ip',
+                     'sport', '443', '0xffff', 'flowid', '1:1'])
+    subprocess.call(['tc', 'filter', 'add', 'dev', 'eth0', 'protocol', 'ip',
+                     'parent', '1:', 'prio', '1', 'u32', 'match', 'ip',
+                     'dport', '943', '0xffff', 'flowid', '1:1'])
+    subprocess.call(['tc', 'filter', 'add', 'dev', 'eth0', 'protocol', 'ip',
+                     'parent', '1:', 'prio', '1', 'u32', 'match', 'ip',
+                     'sport', '943', '0xffff', 'flowid', '1:1'])
+    subprocess.call(['tc', 'filter', 'add', 'dev', 'eth0', 'protocol', 'ip',
+                     'parent', '1:', 'prio', '1', 'u32', 'match', 'ip',
+                     'dport', '1194', '0xffff', 'flowid', '1:1'])
+    subprocess.call(['tc', 'filter', 'add', 'dev', 'eth0', 'protocol', 'ip',
+                     'parent', '1:', 'prio', '1', 'u32', 'match', 'ip',
+                     'sport', '1194', '0xffff', 'flowid', '1:1'])
 
 def setup_udp(host, bdw, dly, txqueuelen, factor):
     bdp = int(factor * bdw * dly * 125)
