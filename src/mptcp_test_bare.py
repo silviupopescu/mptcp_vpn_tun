@@ -102,8 +102,7 @@ def run_test(args, bdw, dly):
         server_addr = '13.0.0.1'
 
     if host == 'smother1':
-        subprocess.call(['killall iperf'])
-        subprocess.call(['iperf -s -D'])
+        subprocess.call(['iperf -s'])
     else:
         avg = 0.0
         for i in range(args.runs):
@@ -119,12 +118,10 @@ def run_test(args, bdw, dly):
                                   stdout=subprocess.PIPE)
             avg += float(p5.communicate().strip())
         avg /= args.runs
-        logging.info('%d %d %f' % (int(link_opts['delay'][:-2]),
-                                   link_opts['bw'],
-                                   avg))
-        print '%d %d %f' % (int(link_opts['delay'][:-2]),
-                                   link_opts['bw'],
-                                   avg)
+        subprocess.call(['ssh', '-i', '~/default-key.key', 'root@10.42.129.134',
+                         '"killall iperf"'])
+        logging.info('%d %d %f' % (dly, bdw, avg)
+        print '%d %d %f' % (dly, bdw, avg)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="""run MPTCP over OpenVPN
