@@ -84,9 +84,9 @@ def setup_tcp(host, bdw, dly, txqueuelen, factor):
 def setup_host(host, algo, bdw, dly, txqueuelen, hasUDP, hasTCP, args):
     setup_core(algo, bdw, dly, args.factor, args.scheduler)
     if hasUDP:
-        setup_udp(host, bdw, dly, txqueuelen, factor)
+        setup_udp(host, bdw, dly, txqueuelen, args.factor)
     if hasTCP:
-        setup_tcp(host, bdw, dly, txqueuelen, factor)
+        setup_tcp(host, bdw, dly, txqueuelen, args.factor)
 
 def run_test(args, bdw, dly):
     #txqueuelen = 0 #int(ceil(float(bdp) / mtu))
