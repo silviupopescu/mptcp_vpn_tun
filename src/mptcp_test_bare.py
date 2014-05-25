@@ -51,8 +51,9 @@ def setup_udp(host, bdw, dly, txqueuelen, factor):
     src = '12.0.0.1' if host == 'smother1' else '12.0.0.2'
     dst = '12.0.0.2' if host == 'smother1' else '12.0.0.1'
     subprocess.call(['openvpn', '--daemon', '--remote', peer, '--proto', 'udp',
-                     '--dev', 'tun0', '--sndbuf', bdp, '--rcvbuf', bdp,
-                     '--txqueuelen', txqueuelen, '--ifconfig', src, dst])
+                     '--dev', 'tun0', '--sndbuf', str(bdp), '--rcvbuf',
+                     str(bdp), '--txqueuelen', str(txqueuelen),
+                     '--ifconfig', src, dst])
     subprocess.call(['ip', 'link', 'set', 'dev', 'tun0', 'multipath', 'on'])
     subprocess.call(['ip', 'rule', 'add', 'from', src, 'table', '1'])
     subprocess.call(['ip', 'route', 'add', '%s/32' % src, 'dev', 'tun0',
@@ -73,8 +74,9 @@ def setup_tcp(host, bdw, dly, txqueuelen, factor):
     src = '13.0.0.1' if host == 'smother1' else '13.0.0.2'
     dst = '13.0.0.2' if host == 'smother1' else '13.0.0.1'
     subprocess.call(['openvpn', '--daemon', '--remote', peer, '--proto', proto,
-                     '--dev', 'tun1', '--sndbuf', bdp, '--rcvbuf', bdp,
-                     '--txqueuelen', txqueuelen, '--ifconfig', src, dst])
+                     '--dev', 'tun1', '--sndbuf', str(bdp), '--rcvbuf',
+                     str(bdp), '--txqueuelen', str(txqueuelen),
+                     '--ifconfig', src, dst])
     subprocess.call(['ip', 'link', 'set', 'dev', 'tun1', 'multipath', 'on'])
     subprocess.call(['ip', 'rule', 'add', 'from', src, 'table', '2'])
     subprocess.call(['ip', 'route', 'add', '%s/32' % src, 'dev', 'tun1',
