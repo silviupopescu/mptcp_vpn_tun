@@ -75,7 +75,9 @@ def setup_udp(host, bdw, dly, txqueuelen, factor):
     subprocess.call(['openvpn', '--daemon', '--remote', peer, '--proto', 'udp',
                      '--dev', 'tun0', '--sndbuf', str(bdp), '--rcvbuf',
                      str(bdp), '--txqueuelen', str(txqueuelen),
-                     '--ifconfig', src, dst])
+                     '--ifconfig', src, dst, '--cipher', 'none', '--auth',
+                     'none', '--fragment', '0', '--mssfix', '0', '--tun-mtu',
+                     '10000'])
     subprocess.call(['ip', 'link', 'set', 'dev', 'tun0', 'multipath', 'on'])
     subprocess.call(['ip', 'rule', 'add', 'from', src, 'table', '1'])
     subprocess.call(['ip', 'route', 'add', '%s/32' % src, 'dev', 'tun0',
@@ -101,7 +103,9 @@ def setup_tcp(host, bdw, dly, txqueuelen, factor):
     subprocess.call(['openvpn', '--daemon', '--remote', peer, '--proto', proto,
                      '--dev', 'tun1', '--sndbuf', str(bdp), '--rcvbuf',
                      str(bdp), '--txqueuelen', str(txqueuelen),
-                     '--ifconfig', src, dst])
+                     '--ifconfig', src, dst, '--cipher', 'none', '--auth',
+                     'none', '--fragment', '0', '--mssfix', '0', '--tun-mtu',
+                     '50000'])
     subprocess.call(['ip', 'link', 'set', 'dev', 'tun1', 'multipath', 'on'])
     subprocess.call(['ip', 'rule', 'add', 'from', src, 'table', '2'])
     subprocess.call(['ip', 'route', 'add', '%s/32' % src, 'dev', 'tun1',
