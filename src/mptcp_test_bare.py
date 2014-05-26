@@ -143,7 +143,7 @@ def run_test(args, bdw, dly):
             out = p1.communicate()[0].split('\n')[-2].split()[6]
             avg += float(out)
         avg /= args.runs
-        subprocess.call(['ssh', '-i', '~/default-key.key', 'root@10.42.129.134',
+        subprocess.call(['ssh', '-i', '/root/default-key.key', 'root@10.42.129.134',
                          '"killall iperf"'])
         logging.info('%d %d %f' % (dly, bdw, avg))
         print '%d %d %f' % (dly, bdw, avg)
