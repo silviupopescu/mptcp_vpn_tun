@@ -138,6 +138,7 @@ def run_test(args, bdw, dly):
             subprocess.call(['iperf', '-s'])
         else:
             subprocess.call(['netserver', '-D', '-4', '-p', '5001'])
+        print 'killed local server'
     else:
         avg = 0.0
         for i in range(args.runs):
@@ -153,14 +154,11 @@ def run_test(args, bdw, dly):
                 out = p1.communicate()[0].split('\n')[6].split()[4]
             avg += float(out)
         avg /= args.runs
-        if args.perf == 'iperf':
-                subprocess.call(['ssh', '-i', '/root/default-key.key',
-                                 'root@10.42.129.134', '"killall iperf"'])
-        else:
-                subprocess.call(['ssh', '-i', '/root/default-key.key',
-                                 'root@10.42.129.134', '"killall netserver"'])
+        subprocess.call(['ssh', '-i', '/root/default-key.key',
+                                 'root@10.42.129.134', '/root/smother_aux.sh'])
         logging.info('%d %d %f' % (dly, bdw, avg))
         print '%d %d %f' % (dly, bdw, avg)
+    subprocess.call(['killall', 'openvpn'])
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="""run MPTCP over OpenVPN
