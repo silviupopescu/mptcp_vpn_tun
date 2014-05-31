@@ -137,7 +137,7 @@ def run_test(args, bdw, dly):
         if args.perf == 'iperf':
             subprocess.call(['iperf', '-s'])
         else:
-            subprocess.call(['netserver', '-4', '-p', '5001'])
+            subprocess.call(['netserver', '-D', '-4', '-p', '5001'])
     else:
         avg = 0.0
         for i in range(args.runs):
@@ -150,7 +150,7 @@ def run_test(args, bdw, dly):
                 p1 = subprocess.Popen(('netperf', '-H', server_addr, '-f', 'k',
                                        '-p', '5001', '-l', str(args.duration)),
                                        stdout=subprocess.PIPE)
-                out = p1.communicate()[0].split['\n'][6].split()[4]
+                out = p1.communicate()[0].split('\n')[6].split()[4]
             avg += float(out)
         avg /= args.runs
         if args.perf == 'iperf':
@@ -197,7 +197,7 @@ if __name__ == '__main__':
     if args.version:
         print 'MPTCP/OpenVPN tester v4.0 (Christina)'
 
-    if args.perf == 'netperf'
+    if args.perf == 'netperf':
         args.duration = 30
         args.runs = 1
 
