@@ -34,7 +34,7 @@ def setup_core(algo, bdw, dly, factor, scheduler):
     if dly != 0:
         subprocess.call(['tc', 'qdisc', 'add', 'dev', 'eth0', 'parent', '1:1',
                          'handle', '12', 'netem', 'delay', '%dms' % dly])
-    # filter iperf (5001)
+    # filter iperf/netperf (5001)
     subprocess.call(['tc', 'filter', 'add', 'dev', 'eth0', 'protocol', 'ip',
                      'parent', '1:', 'prio', '1', 'u32', 'match', 'ip',
                      'dport', '5001', '0xffff', 'flowid', '1:1'])
@@ -105,7 +105,7 @@ def setup_tcp(host, bdw, dly, txqueuelen, factor):
                      str(bdp), '--txqueuelen', str(txqueuelen),
                      '--ifconfig', src, dst, '--cipher', 'none', '--auth',
                      'none', '--fragment', '0', '--mssfix', '0', '--tun-mtu',
-                     '50000'])
+                     '10000'])
     subprocess.call(['ip', 'link', 'set', 'dev', 'tun1', 'multipath', 'on'])
     subprocess.call(['ip', 'rule', 'add', 'from', src, 'table', '2'])
     subprocess.call(['ip', 'route', 'add', '%s/32' % src, 'dev', 'tun1',
@@ -134,17 +134,28 @@ def run_test(args, bdw, dly):
         server_addr = '13.0.0.1'
 
     if host == 'smother1':
-        subprocess.call(['iperf', '-s'])
+        if args.perf == 'iperf':
+            subprocess.call(['iperf', '-s'])
+        else:
+            subprocess.call(['netserver', '-4', '-p', '5001'])
     else:
         avg = 0.0
         for i in range(args.runs):
-            p1 = subprocess.Popen(('iperf', '-c', server_addr, '-f', 'k', '-t',
-                                   str(args.duration)), stdout=subprocess.PIPE)
-            out = p1.communicate()[0].split('\n')[-2].split()[6]
+            out = ''
+            if args.perf == 'iperf':
+                p1 = subprocess.Popen(('iperf', '-c', server_addr, '-f', 'k', '-t',
+                                       str(args.duration)), stdout=subprocess.PIPE)
+                out = p1.communicate()[0].split('\n')[-2].split()[6]
+            else:
+                p1 = subprocess.Popen(('netperf', '-H', server_addr, '-f', 'k',
+                                       '-p', '5001', '-l', str(args.duration)),
+                                       stdout=subprocess.PIPE)
+                out = p1.communicate()[0].split['\n'][6].split()[4]
             avg += float(out)
         avg /= args.runs
-        subprocess.call(['ssh', '-i', '/root/default-key.key', 'root@10.42.129.134',
-                         '"killall iperf"'])
+        if args.perf == 'iperf':
+                subprocess.call(['ssh', '-i', '/root/default-key.key',
+                                 'root@10.42.129.134', '"killall iperf"'])
         logging.info('%d %d %f' % (dly, bdw, avg))
         print '%d %d %f' % (dly, bdw, avg)
 
@@ -176,18 +187,26 @@ if __name__ == '__main__':
     parser.add_argument('-dt', '--delay-to', type=int, default=-1,
                         help='delay stop value (ms)')
     parser.add_argument('-d', '--duration', type=int, default=10,
-                        help='iperf duration (s)')
+                        help='test duration (s)')
+    parser.add_argument('-p', '--perf', choices=['iperf', 'netperf'],
+                        default='netperf',
+                        help='Program to run bandwidth test')
     parser.add_argument('-v', '--version', action='store_true', help='version')
     args = parser.parse_args()
 
     if args.version:
         print 'MPTCP/OpenVPN tester v4.0 (Christina)'
 
-    logfile = 'test-%s%s%f-%s.log' % ('udp-' if args.udp else '',
-                                      'tcp-' if args.tcp else '',
-                                      args.factor,
-                                      strftime('%Y-%m-%d_%H-%M-%S',
-                                               localtime()))
+    if args.perf == 'netperf'
+        args.duration = 30
+        args.runs = 1
+
+    logfile = 'test-%s%s%s%f-%s.log' % (args.perf,
+                                        'udp-' if args.udp else '',
+                                        'tcp-' if args.tcp else '',
+                                        args.factor,
+                                        strftime('%Y-%m-%d_%H-%M-%S',
+                                                 localtime()))
     logging.basicConfig(filename=logfile,
                         level=logging.DEBUG,
                         format='%(message)s')
