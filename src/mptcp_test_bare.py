@@ -156,6 +156,9 @@ def run_test(args, bdw, dly):
         if args.perf == 'iperf':
                 subprocess.call(['ssh', '-i', '/root/default-key.key',
                                  'root@10.42.129.134', '"killall iperf"'])
+        else:
+                subprocess.call(['ssh', '-i', '/root/default-key.key',
+                                 'root@10.42.129.134', '"killall netserver"'])
         logging.info('%d %d %f' % (dly, bdw, avg))
         print '%d %d %f' % (dly, bdw, avg)
 
@@ -201,7 +204,7 @@ if __name__ == '__main__':
         args.duration = 30
         args.runs = 1
 
-    logfile = 'test-%s%s%s%f-%s.log' % (args.perf,
+    logfile = 'test-%s-%s%s%f-%s.log' % (args.perf,
                                         'udp-' if args.udp else '',
                                         'tcp-' if args.tcp else '',
                                         args.factor,
