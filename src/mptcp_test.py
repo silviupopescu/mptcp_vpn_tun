@@ -107,14 +107,12 @@ def setup_host(host, bdw, dly, txqueuelen, args, peer_ip):
         setup_tcp(host, bdw, dly, txqueuelen, args.factor, args.shaper, peer_ip)
 
 def run_test(args, bdw, dly):
-    link_opts = {}
     if args.shaper == 'tc':
-        link_opts = { 'bw':bdw, 'delay': '%dms' % dly, 'use_htb':True }
-
-    topo = MPTCPTopo(**link_opts)
-    net = Mininet(topo, switch=OVSKernelSwitch)
-    if args.shaper == 'tc':
+        topo = MPTCPTopo(bw=bdw, delay='%dms' % dly, use_htb=True)
         net = Mininet(topo, link=TCLink, switch=OVSKernelSwitch)
+    else:
+        topo = MPTCPTopo()
+        net = Mininet(topo, switch=OVSKernelSwitch)
 
     h1 = net.hosts[0]
     h2 = net.hosts[1]
