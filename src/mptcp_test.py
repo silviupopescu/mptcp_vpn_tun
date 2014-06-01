@@ -58,9 +58,9 @@ def setup_udp(host, bdw, dly, txqueuelen, factor, shaper, peer_ip):
     host.cmd('sysctl -w net.ipv4.udp_wmem_min=%d' % buf_size)
     src, dst = ('12.0.0.1', '12.0.0.2') if host.name == 'h1' else ('12.0.0.2',
                                                                    '12.0.0.1')
-    host.cmd('openvpn --daemon --remote %s --proto udp --dev tun0'
-             '--sndbuf %d --rcvbuf %d --txqueuelen %d'
-             '--ifconfig %s %s --cipher none --auth none --fragment 0'
+    host.cmd('openvpn --daemon --remote %s --proto udp --dev tun0 '
+             '--sndbuf %d --rcvbuf %d --txqueuelen %d '
+             '--ifconfig %s %s --cipher none --auth none --fragment 0 '
              '--mssfix 0 --tun-mtu 10000'
              % (peer_ip, buf_size, buf_size, txqueuelen, src, dst))
     host.cmd('ip link set dev tun0 multipath on')
@@ -85,9 +85,9 @@ def setup_tcp(host, bdw, dly, txqueuelen, factor, shaper, peer_ip):
     proto = 'tcp-server' if host.name == 'h1' else 'tcp-client'
     src, dst = ('13.0.0.1', '13.0.0.2') if host.name == 'h1' else ('13.0.0.2',
                                                                    '13.0.0.1')
-    host.cmd('openvpn --daemon --remote %s --proto %s --dev tun1'
-             '--sndbuf %d --rcvbuf %d --txqueuelen %d'
-             '--ifconfig %s %s --cipher none --auth none --fragment 0'
+    host.cmd('openvpn --daemon --remote %s --proto %s --dev tun1 '
+             '--sndbuf %d --rcvbuf %d --txqueuelen %d '
+             '--ifconfig %s %s --cipher none --auth none --fragment 0 '
              '--mssfix 0 --tun-mtu 10000'
              % (peer_ip, proto, buf_size, buf_size, txqueuelen, src, dst))
     host.cmd('ip link set dev tun1 multipath on')
@@ -118,48 +118,51 @@ def run_test(args, bdw, dly):
     h1 = net.hosts[0]
     h2 = net.hosts[1]
 
-    net.start()
-
-    # Setup first host
-    setup_host(h1, bdw, dly, 0, args, h2.IP(intf='h2-eth0'))
-
-    # Setup second host
-    setup_host(h2, bdw, dly, 0, args, h1.IP(intf='h1-eth0'))
-
-    if not(args.udp and args.tcp):
-        h1.cmd('sysctl -w net.ipv4.tcp_congestion_control="cubic"')
-        h1.cmd('sysctl -w net.mptcp.mptcp_enabled=0')
-        h2.cmd('sysctl -w net.ipv4.tcp_congestion_control="cubic"')
-        h2.cmd('sysctl -w net.mptcp.mptcp_enabled=0')
-
-    server_addr = '12.0.0.1'
-    if args.tcp:
-        server_addr = '13.0.0.1'
-
-    avg = 0.0
-    if args.perf == 'iperf':
-        h1.cmd('iperf -s -D')
-        for i in range(args.runs):
-            p1 = h2.popen('iperf -c %s -f k -t %d' % (server_addr,
-                                                      args.duration),
-                          stdout=subprocess.PIPE)
-            out = p1.communicate()[0].split('\n')[-2].split()[6]
-            avg += float(out)
-        h1.cmd('killall iperf')
-    else:
-        h1.cmd('netserver -4 -p 5001')
-        for i in range(args.runs):
-            p1 = h2.popen('netperf -H %s -f k -p 5001 -l %d' % (server_addr,
-                                                                args.duration),
-                          stdout=subprocess.PIPE)
-            out = p1.communicate()[0].split('\n')[6].split()[4]
-            avg += float(out)
-        h1.cmd('killall netserver')
-    avg /= args.runs
-    h1.cmd('killall openvpn')
-    h2.cmd('killall openvpn')
-
-    net.stop()
+    try:
+        net.start()
+        # Setup first host
+        setup_host(h1, bdw, dly, 0, args, h2.IP(intf='h2-eth0'))
+        # Setup second host
+        setup_host(h2, bdw, dly, 0, args, h1.IP(intf='h1-eth0'))
+    
+        if not(args.udp and args.tcp):
+            h1.cmd('sysctl -w net.ipv4.tcp_congestion_control="cubic"')
+            h1.cmd('sysctl -w net.mptcp.mptcp_enabled=0')
+            h2.cmd('sysctl -w net.ipv4.tcp_congestion_control="cubic"')
+            h2.cmd('sysctl -w net.mptcp.mptcp_enabled=0')
+    
+        server_addr = '12.0.0.1'
+        if args.tcp:
+            server_addr = '13.0.0.1'
+    
+        avg = 0.0
+        if args.perf == 'iperf':
+            h1.cmd('iperf -s -D')
+            for i in range(args.runs):
+                p1 = h2.popen('iperf -c %s -f k -t %d' % (server_addr,
+                                                          args.duration),
+                              stdout=subprocess.PIPE)
+                out = p1.communicate()[0].split('\n')[-2].split()[6]
+                avg += float(out)
+            h1.cmd('killall -9 iperf')
+        else:
+            h1.cmd('netserver -4 -p 5001')
+            for i in range(args.runs):
+                p1 = h2.popen('netperf -H %s -f k -p 5001 -l %d' % (server_addr,
+                                                                    args.duration),
+                              stdout=subprocess.PIPE)
+                out = p1.communicate()[0].split('\n')[6].split()[4]
+                avg += float(out)
+            h1.cmd('killall -9 netserver')
+        avg /= args.runs
+    finally:
+        h1.cmd('killall -9 openvpn')
+        h1.cmd('killall -9 iperf')
+        h1.cmd('killall -9 netserver')
+        h2.cmd('killall -9 openvpn')
+        h2.cmd('killall -9 iperf')
+        h2.cmd('killall -9 netserver')
+        net.stop()
 
     logging.info('%d %d %f' % (dly, bdw, avg))
     print '%d %d %f' % (dly, bdw, avg)
