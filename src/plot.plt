@@ -4,8 +4,8 @@ set xlabel 'Delay (ms)'
 set xrange [5:65]
 set xtics 5,5,65
 set ylabel 'Bandwidth (Kbps)'
-set yrange [1:11000]
-set ytics 1,10,11000
+set yrange [0:100000]
+set ytics 0,5000,100000
 set grid
 
 plot 'test.dat' using 1:3 every ::0::4 t '100 Mbps' with linespoints, \
