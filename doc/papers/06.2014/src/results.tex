@@ -97,6 +97,14 @@ as the two previous tests. We still are not able to fully make use of the link
 capacity, but we attribute this drawback to reasons mentioned above, namely
 virtualization and copying of data.
 
+While attempting to maximize link usage, we have also tested with buffer sizes
+which are three times and four times the bandwidth-delay product. Figures
+\ref{fig:mptcp-3} and \ref{fig:mptcp-4} summarize our results. While the lower
+spectrum is comparable to previous tests, beyond an available capacity of 60Mbps
+and a delay of 30ms we notice a drop in throughput, with an even greater drop
+in performance in the case of four times the BDP. This is a consequence of
+granting too much memory for network buffers.
+
 \begin{figure}
   \centering
   \includegraphics[width=\textwidth]{img/test-mptcp-3}
@@ -115,6 +123,14 @@ virtualization and copying of data.
   \centering
   \includegraphics[width=\textwidth]{img/test-mptcp-2-crypto}
   \caption{UDP and TCP tunnels throughput, $buffer size = 2 \times BDP$, Blowfish CBC and SHA1}
-  \label{fig:mptcp-4}
+  \label{fig:mptcp-2-crypto}
 \end{figure}
+
+Since our tests indicate that a buffer size twice the bandwidth-delay product
+yields the best results, we have also looked at how OpenVPN's normal mode of
+operation influences throughput. By default, OpenVPN uses Blowfish in CBC mode
+to encrypt the information and SHA1 as a message authentication code. The
+results are outlined in \ref{fig:mptcp-2-crypto}. Some irregularities can be
+noticed, but we attribute those to the fact that this test incurs additional
+overhead due to the increased computation inherent to encryption.
 
