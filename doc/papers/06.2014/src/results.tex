@@ -11,7 +11,7 @@ moved to less congested paths and aggregated. For the most part, we have
 eliminated encryption and message authentication since that induces
 computational overhead in an already burdened environment. A difference from
 our previous testbed is that we use netperf to measure the throughput since it
-has proven to be more stable, while yielding similar results.
+has proven to be more stable than iperf, while yielding similar results.
 
 We cannot properly establish the benefits of MPTCP without measuring the
 achievable throughput using a single tunnel. Figures \ref{fig:udp} and
@@ -36,7 +36,7 @@ In the case of the UDP tunnel, we notice that for lower link capacities, the
 UDP tunnel manages to offer throughput close to the maximum achievable values.
 That does not apply for larger bandwidths and delay. We consider that the root
 cause for this is the overhead introduced by copying the data from the tunnel
-device in users-pace, in the OpenVPN process, and then back to kernel-space to
+device in user-space, in the OpenVPN process, and then back to kernel-space to
 be sent via the Ethernet device.
 
 The TCP tunnel exhibits poor results. Most throughput values are in the range
@@ -48,12 +48,12 @@ environment, but we are also attempting to run TCP traffic over a TCP tunnel.
 By default, the Linux kernel uses the CUBIC congestion control algorithm with
 regards to TCP connections. While this implementation has proven to be
 efficient, the fact that we are encapsulating TCP traffic in TCP means that
-the two instances of CUBIC will conflict each other. We believe these are the
+the two instances of CUBIC will conflict with each other. We believe these are the
 factors that lead to such poor performance.
 
 Having set the baseline for what can be done using a single tunnel, we have
 also conducted tests using two tunnels, using MPTCP. We have configured MPTCP
-to make use of the Olia congestion control algorithm with the goal of
+to make use of the OLIA congestion control algorithm with the goal of
 observing how traffic is shifted to less congested paths, in our case the UDP
 tunnel, despite the initial connection being made over the congested path, in
 our case the TCP tunnel. A relevant factor in assisting MPTCP was configuring
