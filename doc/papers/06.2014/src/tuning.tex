@@ -1,2 +1,66 @@
 % vim: set tw=78 sts=2 sw=2 ts=8 aw et ai:
-TODO
+
+In order to maximize throughput, we have focused on the effects of varying the
+send and receive buffer sizes. The buffer should be able to keep packets
+depending on the TCP window size and must take into account the bandwidh and
+delay of the underlying link. If a packet is received out of order, a node
+must send ACKs such that the peer notices a packet was missed and wait for the
+missing packet. During this time when the ACKs reach the peer and the reply
+comes back, the node must keep all incoming packets pertaining to that
+connection.
+
+Based on this, we have looked at the interfaces provided by the Linux kernel
+to manipulate the sizes of such buffers in order to suit our tests. We have
+found several configurable values that aided us in our study, most of them
+exposed via the sysctl interface.
+
+First of all there are the limits for all types of connections. These are
+configured using the net.core.rmem_default and net.core.rmem_max for receive
+buffers and net.core.wmem_default and net.core.wmem_max for send buffers. The
+entries ending in "default" dictate the starting size for a buffer, while the
+entries with the "max" suffix provide an upper limit. We had to set these
+options since they have precedence over entries which are dedicated to UDP or
+TCP connections.
+
+Secondly, we have approached the inet peer storage and the route cache. From
+what we know, the inet peer storage caches TCP parameters used in previous TCP
+sessions with other nodes. Since our tests change the bandwidth and delay,
+such a behavior is undesirable. The parameters that influence the inet peer
+storage are net.ipv4.inet_peer_maxttl and net.ipv4.inet_peer_minttl, which
+control the time to live of entries, as well as net.ipv4.inet_peer_threshold,
+which specifies how much space should be allocated for the entries. Setting
+all of these to 0 effectively deactivates the storage. In addition, we run our
+tests from high bandwidth and high delay to low bandwidth and low delay and
+clear the route cache after each test, with the same goal of avoiding loss of
+performance due to improper cached session parameters.
+
+In terms of UDP traffic, there are three entries that control the buffer sizes
+for UDP connections. The first one is net.ipv4.udp_mem, a vector of three
+integers governing the number of pages allowed for queueing by all UDP
+sockets. These three integers are the minimum, pressure and maximum values.
+The only one which is not self-explanatory, the pressure value, signals that
+UDP should moderate its memory consumption. In addition, the
+net.ipv4.udp_rmem_min and net.ipv4.udp_wmem_min entries dictate the minimum
+size, in bytes, that UDP sockets use in moderation for receiving and sending
+data, respectively.
+
+With regards to TCP traffic, we have three vector entries, each of three
+values. Similar to udp_mem previously mentioned we can use net.ipv4.tcp_mem in
+the same manner. Additionally, we can control the minimum, default and maximum
+send buffers with the net.ipv4.tcp_wmem vector and receive buffers with the
+similarly named net.ipv4.tcp_rmem.
+
+We have also looked at solutions to control the buffers used by OpenVPN when
+communicating with the tunnel devices it creates. The "--sndbuf" and
+"--rcvbuf" control the sizes of the send and receive buffers over the tunnel
+interfaces. Moreover, the "--txqueuelen" option controls how many packets
+should be queued on the tunnel interface. We set this to 0 such that the
+packets are forwarded as soon as possibly to the network interface. We have
+also deactivated OpenVPN internal fragmentation engine using the "--fragment"
+and "--mssfix" options. Lastly, we have changed the MTU over the tunnel
+interface to larger values because this particular setting also dictates the
+size of the buffers that are copied between kernel-space and user-space in
+order to be forwarded to the encryption engine.
+
+Last, but no least, we deactivate MPTCP checksumming since it would add
+unnecessary computational overhead.
