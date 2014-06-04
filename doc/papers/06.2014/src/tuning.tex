@@ -1,8 +1,17 @@
 % vim: set tw=78 sts=2 sw=2 ts=8 aw et ai:
+Our framework is largely the same as the one in the previous report \cite{sem1}. We use a Ubuntu 12.04 virtual machine with an MPTCP kernel and Mininet running inside. Mininet is a scalable and flexible framework for software defined networking that uses features of lightweight virtualization such as process and network namespaces.The current Mininet topology features two hosts with a single Ethernet link between them. The Ethernet link serves as a carrier for two OpenVPN tunnels, one over UDP and
+the other over TCP. This setup allows us to impose rate-limiting on the Ethernet
+interface, which will then propagate on the tunnel interfaces. At the same
+time, we can run MPTCP over the OpenVPN tunnels and observe how traffic is
+moved to less congested paths and aggregated. For the most part, we have
+eliminated encryption and message authentication since that induces
+computational overhead in an already burdened environment. A difference from
+our previous testbed is that we use netperf to measure the throughput since it
+has proven to be more stable than iperf, while yielding similar results.
 
 In order to maximize throughput, we have focused on the effects of varying the
 send and receive buffer sizes. The buffer should be able to keep packets
-depending on the TCP window size and must take into account the bandwidh and
+depending on the TCP window size and must take into account the bandwidth and
 delay of the underlying link. If a packet is received out of order, a node
 must send ACKs such that the peer notices a packet was missed and wait for the
 missing packet. During this time when the ACKs reach the peer and the reply
@@ -62,5 +71,5 @@ interface to larger values because this particular setting also dictates the
 size of the buffers that are copied between kernel-space and user-space in
 order to be forwarded to the encryption engine.
 
-Last, but no least, we deactivate MPTCP checksumming since it would add
+Last, but not least, we deactivate MPTCP checksumming since it would add
 unnecessary computational overhead.

@@ -1,18 +1,5 @@
 % vim: set tw=78 sts=2 sw=2 ts=8 aw et ai:
 
-In order to conduct our tests, we employ an updated version of the framework
-we have previously used to analyze MPTCP on its own\cite{sem1}. The current
-testbed features two hosts with a single Ethernet link between them. The
-Ethernet link serves as a carrier for two OpenVPN tunnels, one over UDP and
-the other over TCP. This setup allows us to impose rate-limiting on the Ethernet
-interface, which will then propagate on the tunnel interfaces. At the same
-time, we can run MPTCP over the OpenVPN tunnels and observe how traffic is
-moved to less congested paths and aggregated. For the most part, we have
-eliminated encryption and message authentication since that induces
-computational overhead in an already burdened environment. A difference from
-our previous testbed is that we use netperf to measure the throughput since it
-has proven to be more stable than iperf, while yielding similar results.
-
 We cannot properly establish the benefits of MPTCP without measuring the
 achievable throughput using a single tunnel. Figures \ref{fig:udp} and
 \ref{fig:tcp} show the results for a UDP tunnel and a TCP tunnel,
@@ -41,7 +28,7 @@ be sent via the Ethernet device.
 
 The TCP tunnel exhibits poor results. Most throughput values are in the range
 of 30 - 70 Kbps, with a few exceptional cases where we reach throughput up to
-10 Mbps. This undeterministic and unsatisfactory result can be explained by
+10 Mbps. This nondeterministic and unsatisfactory result can be explained by
 taking into account the nature of our testbed. Not only are we copying large
 amounts of data between user-space and kernel-space, in a virtualized
 environment, but we are also attempting to run TCP traffic over a TCP tunnel.
@@ -100,7 +87,7 @@ virtualization and copying of data.
 While attempting to maximize link usage, we have also tested with buffer sizes
 which are three times and four times the bandwidth-delay product. Figures
 \ref{fig:mptcp-3} and \ref{fig:mptcp-4} summarize our results. While the lower
-spectrum is comparable to previous tests, beyond an available capacity of 60Mbps
+spectrum is comparable to previous tests, beyond an available capacity of 60 Mbps
 and a delay of 30ms we notice a drop in throughput, with an even greater drop
 in performance in the case of four times the BDP. This is a consequence of
 granting too much memory for network buffers.
@@ -130,7 +117,7 @@ Since our tests indicate that a buffer size twice the bandwidth-delay product
 yields the best results, we have also looked at how OpenVPN's normal mode of
 operation influences throughput. By default, OpenVPN uses Blowfish in CBC mode
 to encrypt the information and SHA1 as a message authentication code. The
-results are outlined in \ref{fig:mptcp-2-crypto}. Some irregularities can be
+results are outlined in Figure \ref{fig:mptcp-2-crypto}. Some irregularities can be
 noticed, but we attribute those to the fact that this test incurs additional
 overhead due to the increased computation inherent to encryption.
 
