@@ -1,4 +1,12 @@
 % vim: set tw=78 sts=2 sw=2 ts=8 aw et ai:
+MPTCP is a TCP alternative  presented as a set of extensions to regular TCP which allow the grouping of interfaces under the same Layer 4 connection, with the ability to distribute traffic over multiple subflows \cite{how-hard-can-it-be}.
+
 Our previous report \cite{sem1} focused on the effect of TCP link configurations over MPTCP. We found that while MPTCP's congestion window algorithm performs very well, the throughput is very much influenced by the size of the receive buffer, which must be correlated with the bandwidth-delay product. We have built on those findings and incorporated them into a new test environment, looking to understand how MPTCP combined throughput is affected when running over OpenVPN tunnels, both UDP and TCP.
 
+The opportunistic linked increases algorithm (OLIA) that MPTCP uses was designed as an improvement over its predecessor, the linked increases algorithm (LIA) which was not pareto-optimal \cite{olia}. OLIA was proven to be pareto-optimal while satisfying the three design goals of MPTCP: perform at least as well as TCP, do not take up more capacity than TCP from any path and balance congestion.
+
+Our experiments used the CUBIC algorithm for regular TCP tunnels over OpenVPN and OLIA for MPTCP. We have analyzed CUBIC's performance in a TCP-over-TCP setup, highlighting the throughput drop when two instances of the algorithm run on top of each other.
+
 OpenVPN is a popular lightweight open source SSL VPN solution that provides a wide range of functionalities including remote access and site-to-site VPNs, together with extensive link security and client authentication capabilities. We have chosen it due to its ubiquity, ease to use and detailed documentation.
+
+In the next section we describe our testbed and present the system configurations used in our experiments.  Section \ref{sec:results} provides a detailed breakdown of our results, while Section \ref{sec:conclusion} sums up our findings and looks at future developments in the project.
