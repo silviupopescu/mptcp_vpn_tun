@@ -82,4 +82,63 @@ Silviu-Mihai\\
   \end{itemize}
 \end{frame}
 
+\section{Tuning Linux Networking}
+\begin{frame}{Core}
+  \begin{itemize}
+    \item buffer sizes
+    \item inet peer storage
+    \item route cache
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{UDP and TCP}
+  \begin{itemize}
+    \item buffer sizes
+    \item UDP: minimum, pressure, maximum
+    \item TCP: minimum, default, maximum
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{OpenVPN}
+  \begin{itemize}
+    \item buffer sizes (again)
+    \item queue length
+    \item tunnel MTU, fragmentation, MSS
+    \item no encryption, no HMAC
+  \end{itemize}
+\end{frame}
+
+\section{Results}
+\begin{frame}{Testbed}
+\end{frame}
+
+\begin{frame}{Single UDP tunnel}
+  \begin{figure}
+    \includegraphics[scale=0.9]{img/test-udp}
+  \end{figure}
+\end{frame}
+
+\begin{frame}{Single TCP tunnel}
+  \begin{figure}
+    \includegraphics[scale=0.9]{img/test-tcp}
+  \end{figure}
+\end{frame}
+
+\begin{frame}{UDP and TCP tunnels}
+  \begin{figure}
+    \includegraphics[scale=0.9]{img/test-mptcp-2}
+  \end{figure}
+\end{frame}
+
+\begin{frame}{UDP and TCP tunnels, default encryption settings}
+  \begin{figure}
+    \includegraphics[scale=0.9]{img/test-mptcp-2-crypto}
+  \end{figure}
+
+\end{frame}
+
+\section{Conclusions}
+\begin{frame}{Conclusions and Further Work}
+\end{frame}
+
 \end{document}
