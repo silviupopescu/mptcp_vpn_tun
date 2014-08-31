@@ -13,6 +13,9 @@ import subprocess
 #   \                           /
 #    -----------tun1------------
 
+peer_presets = {'smother3':['10.42.129.138', '12.0.0.1', '13.0.0.1'],
+                'smother4':['10.42.130.134', '12.0.0.2', '13.0.0.2']}
+
 def setup_core(algo, bdw, dly, factor, scheduler):
     subprocess.call(['ip', 'link', 'set', 'dev', 'eth0', 'multipath', 'off'])
     subprocess.call(['sysctl', '-w', 'net.mptcp.mptcp_checksum=0'])
@@ -69,9 +72,11 @@ def setup_udp(host, bdw, dly, txqueuelen, factor):
 #    subprocess.call(['sysctl', '-w', 'net.ipv4.udp_mem="%s"' % udp_mem])
     subprocess.call(['sysctl', '-w', 'net.ipv4.udp_rmem_min=%d' % bdp])
     subprocess.call(['sysctl', '-w', 'net.ipv4.udp_wmem_min=%d' % bdp])
-    peer = '10.42.130.134' if host == 'smother1' else '10.42.129.134'
-    src = '12.0.0.1' if host == 'smother1' else '12.0.0.2'
-    dst = '12.0.0.2' if host == 'smother1' else '12.0.0.1'
+    server_name = peer_presets.keys()[0]
+    client_name = peer_presets.keys()[1]
+    peer = peer_presets[client_name][0] if host == server_name else peer_presets[server_name][0]
+    src = peer_presets[server_name][1] if host == server_name else peer_presets[client_name][1]
+    dst = peer_presets[client_name][1] if host == server_name else peer_presets[server_name][1]
     subprocess.call(['openvpn', '--daemon', '--remote', peer, '--proto', 'udp',
                      '--dev', 'tun0', '--sndbuf', str(bdp), '--rcvbuf',
                      str(bdp), '--txqueuelen', str(txqueuelen),
@@ -96,10 +101,12 @@ def setup_tcp(host, bdw, dly, txqueuelen, factor):
     tcp_wmem = '%d %d %d' % (bdp, bdp, bdp) # min, default, max
     os.system('sysctl -w net.ipv4.tcp_wmem="%s"' % tcp_wmem)
 #    subprocess.call(['sysctl', '-w', 'net.ipv4.tcp_wmem="%s"' % tcp_wmem])
-    proto = 'tcp-server' if host == 'smother1' else 'tcp-client'
-    peer = '10.42.130.134' if host == 'smother1' else '10.42.129.134'
-    src = '13.0.0.1' if host == 'smother1' else '13.0.0.2'
-    dst = '13.0.0.2' if host == 'smother1' else '13.0.0.1'
+    server_name = peer_presets.keys()[0]
+    client_name = peer_presets.keys()[1]
+    proto = 'tcp-server' if host == server_name else 'tcp-client'
+    peer = peer_presets[client_name][0] if host == server_name else peer_presets[server_name][0]
+    src = peer_presets[server_name][2] if host == server_name else peer_presets[client_name][2]
+    dst = peer_presets[client_name][2] if host == server_name else peer_presets[server_name][2]
     subprocess.call(['openvpn', '--daemon', '--remote', peer, '--proto', proto,
                      '--dev', 'tun1', '--sndbuf', str(bdp), '--rcvbuf',
                      str(bdp), '--txqueuelen', str(txqueuelen),
@@ -129,11 +136,12 @@ def run_test(args, bdw, dly):
 #        subprocess.call(['sysctl', '-w', 'net.ipv4.tcp_congestion_control="cubic"'])
         subprocess.call(['sysctl', '-w', 'net.mptcp.mptcp_enabled=0'])
 
-    server_addr = '12.0.0.1'
+    server_name = peer_presets.keys()[0]
+    server_addr = peer_presets[server_name][1]
     if args.tcp:
-        server_addr = '13.0.0.1'
+        server_addr = peer_presets[server_name][2]
 
-    if host == 'smother1':
+    if host == server_name:
         if args.perf == 'iperf':
             subprocess.call(['iperf', '-s'])
         else:
@@ -154,8 +162,9 @@ def run_test(args, bdw, dly):
                 out = p1.communicate()[0].split('\n')[6].split()[4]
             avg += float(out)
         avg /= args.runs
-        subprocess.call(['ssh', '-i', '/root/default-key.key',
-                                 'root@10.42.129.134', '/root/smother_aux.sh'])
+        subprocess.call(['ssh', '-i', 'default-key.key',
+                         'root@' + peer_presets[server_name][0],
+                         'smother_aux.sh'])
         logging.info('%d %d %f' % (dly, bdw, avg))
         print '%d %d %f' % (dly, bdw, avg)
     subprocess.call(['killall', 'openvpn'])
