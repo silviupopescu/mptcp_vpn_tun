@@ -134,7 +134,7 @@ def run_test(args, bdw, dly):
     if (not(args.udp and args.tcp)):
         subprocess.call(['sysctl', '-w', 'net.ipv4.tcp_congestion_control="cubic"'])
         subprocess.call(['sysctl', '-w', 'net.mptcp.mptcp_enabled=0'])
-        subprocess,call(['sysctl', '-w', 'net.mptcp.mptcp_path_manager=default'])
+        subprocess.call(['sysctl', '-w', 'net.mptcp.mptcp_path_manager=default'])
 
     server_name = peer_presets.keys()[0]
     server_addr = peer_presets[server_name][1]
