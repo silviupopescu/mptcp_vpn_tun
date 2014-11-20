@@ -174,6 +174,7 @@ if __name__ == '__main__':
                                      throughput tests""")
     parser.add_argument('-f', '--factor', type=float, default=1.0,
                         help='buffer size = factor * BDP')
+    parser.add_argument('-u', '--udp', action='store_true',
                         help='create a UDP tunnel')
     parser.add_argument('-t', '--tcp', action='store_true',
                         help='create a TCP tunnel')
