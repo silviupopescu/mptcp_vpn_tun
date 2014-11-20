@@ -13,8 +13,8 @@ import subprocess
 #   \                           /
 #    -----------tun1------------
 
-peer_presets = {'smother3':['10.42.129.138', '12.0.0.1', '13.0.0.1'],
-                'smother4':['10.42.130.134', '12.0.0.2', '13.0.0.2']}
+peer_presets = {'smother1':['10.8.0.105', '12.0.0.1', '13.0.0.1'],
+                'smother2':['10.8.0.107', '12.0.0.2', '13.0.0.2']}
 
 def setup_core(algo, bdw, dly, factor, scheduler):
     subprocess.call(['ip', 'link', 'set', 'dev', 'eth0', 'multipath', 'off'])
@@ -132,9 +132,9 @@ def run_test(args, bdw, dly):
     setup_host(host, args.congestion, bdw, dly, 0, args.udp, args.tcp, args)
 
     if (not(args.udp and args.tcp)):
-        os.system('sysctl -w net.ipv4.tcp_congestion_control="cubic"')
-#        subprocess.call(['sysctl', '-w', 'net.ipv4.tcp_congestion_control="cubic"'])
+        subprocess.call(['sysctl', '-w', 'net.ipv4.tcp_congestion_control="cubic"'])
         subprocess.call(['sysctl', '-w', 'net.mptcp.mptcp_enabled=0'])
+        subprocess,call(['sysctl', '-w', 'net.mptcp.mptcp_path_manager=default'])
 
     server_name = peer_presets.keys()[0]
     server_addr = peer_presets[server_name][1]
@@ -152,8 +152,8 @@ def run_test(args, bdw, dly):
         for i in range(args.runs):
             out = ''
             if args.perf == 'iperf':
-                p1 = subprocess.Popen(('iperf', '-c', server_addr, '-f', 'k', '-t',
-                                       str(args.duration)), stdout=subprocess.PIPE)
+                p1 = subprocess.Popen(('iperf', '-c', server_addr, '-f', 'k',
+                                       '-F', 'iperf.test'), stdout=subprocess.PIPE)
                 out = p1.communicate()[0].split('\n')[-2].split()[6]
             else:
                 p1 = subprocess.Popen(('netperf', '-H', server_addr, '-f', 'k',
