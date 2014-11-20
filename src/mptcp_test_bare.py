@@ -72,8 +72,8 @@ def setup_udp(host, bdw, dly, txqueuelen, factor):
 #    subprocess.call(['sysctl', '-w', 'net.ipv4.udp_mem="%s"' % udp_mem])
     subprocess.call(['sysctl', '-w', 'net.ipv4.udp_rmem_min=%d' % bdp])
     subprocess.call(['sysctl', '-w', 'net.ipv4.udp_wmem_min=%d' % bdp])
-    server_name = peer_presets.keys()[0]
-    client_name = peer_presets.keys()[1]
+    server_name = peer_presets.keys()[1]
+    client_name = peer_presets.keys()[0]
     peer = peer_presets[client_name][0] if host == server_name else peer_presets[server_name][0]
     src = peer_presets[server_name][1] if host == server_name else peer_presets[client_name][1]
     dst = peer_presets[client_name][1] if host == server_name else peer_presets[server_name][1]
@@ -101,8 +101,8 @@ def setup_tcp(host, bdw, dly, txqueuelen, factor):
     tcp_wmem = '%d %d %d' % (bdp, bdp, bdp) # min, default, max
     os.system('sysctl -w net.ipv4.tcp_wmem="%s"' % tcp_wmem)
 #    subprocess.call(['sysctl', '-w', 'net.ipv4.tcp_wmem="%s"' % tcp_wmem])
-    server_name = peer_presets.keys()[0]
-    client_name = peer_presets.keys()[1]
+    server_name = peer_presets.keys()[1]
+    client_name = peer_presets.keys()[0]
     proto = 'tcp-server' if host == server_name else 'tcp-client'
     peer = peer_presets[client_name][0] if host == server_name else peer_presets[server_name][0]
     src = peer_presets[server_name][2] if host == server_name else peer_presets[client_name][2]
@@ -136,7 +136,7 @@ def run_test(args, bdw, dly):
         subprocess.call(['sysctl', '-w', 'net.mptcp.mptcp_enabled=0'])
         subprocess.call(['sysctl', '-w', 'net.mptcp.mptcp_path_manager=default'])
 
-    server_name = peer_presets.keys()[0]
+    server_name = peer_presets.keys()[1]
     server_addr = peer_presets[server_name][1]
     if args.tcp:
         server_addr = peer_presets[server_name][2]
@@ -174,7 +174,6 @@ if __name__ == '__main__':
                                      throughput tests""")
     parser.add_argument('-f', '--factor', type=float, default=1.0,
                         help='buffer size = factor * BDP')
-    parser.add_argument('-u', '--udp', action='store_true',
                         help='create a UDP tunnel')
     parser.add_argument('-t', '--tcp', action='store_true',
                         help='create a TCP tunnel')
