@@ -108,7 +108,7 @@ def setup_tcp(host, bdw, dly, txqueuelen, factor):
                      str(bdp), '--txqueuelen', str(txqueuelen),
                      '--ifconfig', src, dst, '--cipher', 'none', '--auth',
                      'none', '--fragment', '0', '--mssfix', '0', '--tun-mtu',
-                     '10000'])
+                     '1400'])
     subprocess.call(['ip', 'link', 'set', 'dev', 'tun1', 'multipath', 'on'])
     subprocess.call(['ip', 'rule', 'add', 'from', src, 'table', '2'])
     subprocess.call(['ip', 'route', 'add', '%s/32' % src, 'dev', 'tun1',
