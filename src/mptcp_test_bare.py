@@ -17,6 +17,8 @@ peer_presets = {'smother-1':['10.8.0.178', '12.0.0.1', '13.0.0.1'],
                 'smother-2':['10.8.0.180', '12.0.0.2', '13.0.0.2']}
 
 def setup_core(algo, bdw, dly, factor, scheduler):
+    subprocess.call(['sysctl', '-w', 'net.mptcp.mptcp_enabled=1'])
+    subprocess.call(['sysctl', '-w', 'net.mptcp.mptcp_path_manager=fullmesh'])
     subprocess.call(['ip', 'link', 'set', 'dev', 'eth0', 'multipath', 'off'])
     subprocess.call(['sysctl', '-w', 'net.mptcp.mptcp_checksum=0'])
     subprocess.call(['sysctl', '-w',
