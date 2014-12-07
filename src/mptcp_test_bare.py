@@ -74,8 +74,8 @@ def setup_udp(host, bdw, dly, txqueuelen, factor):
     subprocess.call(['sysctl', '-w', udp_mem_sysctl])
     subprocess.call(['sysctl', '-w', 'net.ipv4.udp_rmem_min=%d' % bdp])
     subprocess.call(['sysctl', '-w', 'net.ipv4.udp_wmem_min=%d' % bdp])
-    server_name = peer_presets.keys()[1]
-    client_name = peer_presets.keys()[0]
+    server_name = peer_presets.keys()[0]
+    client_name = peer_presets.keys()[1]
     peer = peer_presets[client_name][0] if host == server_name else peer_presets[server_name][0]
     src = peer_presets[server_name][1] if host == server_name else peer_presets[client_name][1]
     dst = peer_presets[client_name][1] if host == server_name else peer_presets[server_name][1]
@@ -103,8 +103,8 @@ def setup_tcp(host, bdw, dly, txqueuelen, factor):
     tcp_wmem = '%d %d %d' % (bdp, bdp, bdp) # min, default, max
     tcp_wmem_sysctl = 'net.ipv4.tcp_wmem="%s"' % tcp_wmem
     subprocess.call(['sysctl', '-w', tcp_wmem_sysctl])
-    server_name = peer_presets.keys()[1]
-    client_name = peer_presets.keys()[0]
+    server_name = peer_presets.keys()[0]
+    client_name = peer_presets.keys()[1]
     proto = 'tcp-server' if host == server_name else 'tcp-client'
     peer = peer_presets[client_name][0] if host == server_name else peer_presets[server_name][0]
     src = peer_presets[server_name][2] if host == server_name else peer_presets[client_name][2]
@@ -138,7 +138,7 @@ def run_test(args, bdw, dly):
         subprocess.call(['sysctl', '-w', 'net.mptcp.mptcp_enabled=0'])
         subprocess.call(['sysctl', '-w', 'net.mptcp.mptcp_path_manager=default'])
 
-    server_name = peer_presets.keys()[1]
+    server_name = peer_presets.keys()[0]
     server_addr = peer_presets[server_name][1]
     if args.tcp:
         server_addr = peer_presets[server_name][2]
@@ -166,7 +166,7 @@ def run_test(args, bdw, dly):
         avg /= args.runs
         subprocess.call(['ssh', '-i', 'smother.key',
                          'root@' + peer_presets[server_name][0],
-                         'smother_aux.sh'])
+                         '~ubuntu/smother/src/smother_aux.sh'])
         logging.info('%d %d %f' % (dly, bdw, avg))
         print '%d %d %f' % (dly, bdw, avg)
     subprocess.call(['killall', 'openvpn'])
