@@ -19,8 +19,8 @@ peer_presets = {'smother-1':['10.8.0.178', '12.0.0.1', '13.0.0.1'],
 def setup_core(algo, bdw, dly, factor, scheduler):
     subprocess.call(['ip', 'link', 'set', 'dev', 'eth0', 'multipath', 'off'])
     subprocess.call(['sysctl', '-w', 'net.mptcp.mptcp_checksum=0'])
-    os.system('sysctl -w net.ipv4.tcp_congestion_control="%s"' % algo)
-#    subprocess.call(['sysctl', '-w', 'net.ipv4.tcp_congestion_control=%s' % algo])
+    subprocess.call(['sysctl', '-w',
+                     'net.ipv4.tcp_congestion_control=%s' % algo])
     buffer_size = int(factor * bdw * dly * 125) # 125 converts from Mbps*ms to bytes
     subprocess.call(['sysctl', '-w', 'net.core.rmem_max=%d' % buffer_size])
     subprocess.call(['sysctl', '-w', 'net.core.wmem_max=%d' % buffer_size])
@@ -68,8 +68,7 @@ def setup_udp(host, bdw, dly, txqueuelen, factor):
     bdp = int(factor * bdw * dly * 125)
     bdp_pages = bdp / 4096
     udp_mem = '%d %d %d' % (bdp_pages, bdp_pages, bdp_pages) # min, pressure, max
-    os.system('sysctl -w net.ipv4.udp_mem="%s"' % udp_mem)
-#    subprocess.call(['sysctl', '-w', 'net.ipv4.udp_mem="%s"' % udp_mem])
+    subprocess.call(['sysctl', '-w', 'net.ipv4.udp_mem="%s"' % udp_mem])
     subprocess.call(['sysctl', '-w', 'net.ipv4.udp_rmem_min=%d' % bdp])
     subprocess.call(['sysctl', '-w', 'net.ipv4.udp_wmem_min=%d' % bdp])
     server_name = peer_presets.keys()[1]
@@ -93,14 +92,11 @@ def setup_tcp(host, bdw, dly, txqueuelen, factor):
     bdp = int(factor * bdw * dly * 125)
     bdp_pages = bdp / 4096
     tcp_mem = '%d %d %d' % (bdp_pages, bdp_pages, bdp_pages) # min, pressure, max
-    os.system('sysctl -w net.ipv4.tcp_mem="%s"' % tcp_mem)
-#    subprocess.call(['sysctl', '-w', 'net.ipv4.tcp_mem="%s"' % tcp_mem])
+    subprocess.call(['sysctl', '-w', 'net.ipv4.tcp_mem="%s"' % tcp_mem])
     tcp_rmem = '%d %d %d' % (bdp, bdp, bdp) # min, default, max
-    os.system('sysctl -w net.ipv4.tcp_rmem="%s"' % tcp_rmem)
-#    subprocess.call(['sysctl', '-w', 'net.ipv4.tcp_rmem="%s"' % tcp_rmem])
+    subprocess.call(['sysctl', '-w', 'net.ipv4.tcp_rmem="%s"' % tcp_rmem])
     tcp_wmem = '%d %d %d' % (bdp, bdp, bdp) # min, default, max
-    os.system('sysctl -w net.ipv4.tcp_wmem="%s"' % tcp_wmem)
-#    subprocess.call(['sysctl', '-w', 'net.ipv4.tcp_wmem="%s"' % tcp_wmem])
+    subprocess.call(['sysctl', '-w', 'net.ipv4.tcp_wmem="%s"' % tcp_wmem])
     server_name = peer_presets.keys()[1]
     client_name = peer_presets.keys()[0]
     proto = 'tcp-server' if host == server_name else 'tcp-client'
@@ -132,7 +128,7 @@ def run_test(args, bdw, dly):
     setup_host(host, args.congestion, bdw, dly, 0, args.udp, args.tcp, args)
 
     if (not(args.udp and args.tcp)):
-        subprocess.call(['sysctl', '-w', 'net.ipv4.tcp_congestion_control="cubic"'])
+        subprocess.call(['sysctl', '-w', 'net.ipv4.tcp_congestion_control=cubic'])
         subprocess.call(['sysctl', '-w', 'net.mptcp.mptcp_enabled=0'])
         subprocess.call(['sysctl', '-w', 'net.mptcp.mptcp_path_manager=default'])
 
@@ -146,14 +142,14 @@ def run_test(args, bdw, dly):
             subprocess.call(['iperf', '-s'])
         else:
             subprocess.call(['netserver', '-D', '-4', '-p', '5001'])
-        print 'killed local server'
     else:
         avg = 0.0
         for i in range(args.runs):
             out = ''
             if args.perf == 'iperf':
                 p1 = subprocess.Popen(('iperf', '-c', server_addr, '-f', 'k',
-                                       '-F', 'iperf.test'), stdout=subprocess.PIPE)
+                                       '-t', str(args.duration)),
+                                       stdout=subprocess.PIPE)
                 out = p1.communicate()[0].split('\n')[-2].split()[6]
             else:
                 p1 = subprocess.Popen(('netperf', '-H', server_addr, '-f', 'k',
@@ -162,7 +158,7 @@ def run_test(args, bdw, dly):
                 out = p1.communicate()[0].split('\n')[6].split()[4]
             avg += float(out)
         avg /= args.runs
-        subprocess.call(['ssh', '-i', 'default-key.key',
+        subprocess.call(['ssh', '-i', 'smother.key',
                          'root@' + peer_presets[server_name][0],
                          'smother_aux.sh'])
         logging.info('%d %d %f' % (dly, bdw, avg))
@@ -182,7 +178,8 @@ if __name__ == '__main__':
                         help='how many times to run a test')
     parser.add_argument('-s', '--scheduler', choices=['htb', 'hfsc'],
                         default='htb', help='packet scheduler')
-    parser.add_argument('-c', '--congestion', choices=['cubic', 'olia'],
+    parser.add_argument('-c', '--congestion',
+                        choices=['cubic', 'reno', 'lia', 'olia', 'wvegas'],
                         default='olia', help='TCP congestion algorithm')
     parser.add_argument('-bf', '--bandwidth-from', type=int, default=100,
                         help='bandwidth start value (Mbps)')
