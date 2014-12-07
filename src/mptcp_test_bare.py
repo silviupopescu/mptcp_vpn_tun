@@ -13,8 +13,8 @@ import subprocess
 #   \                           /
 #    -----------tun1------------
 
-peer_presets = {'smother1':['10.8.0.105', '12.0.0.1', '13.0.0.1'],
-                'smother2':['10.8.0.107', '12.0.0.2', '13.0.0.2']}
+peer_presets = {'smother-1':['10.8.0.178', '12.0.0.1', '13.0.0.1'],
+                'smother-2':['10.8.0.180', '12.0.0.2', '13.0.0.2']}
 
 def setup_core(algo, bdw, dly, factor, scheduler):
     subprocess.call(['ip', 'link', 'set', 'dev', 'eth0', 'multipath', 'off'])
