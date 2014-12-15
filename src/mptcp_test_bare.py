@@ -219,19 +219,19 @@ if __name__ == '__main__':
         args.duration = 30
         args.runs = 1
 
-    logfile = 'test-%s-%s%s%f-%s.log' % (args.perf,
-                                        'udp-' if args.udp else '',
-                                        'tcp-' if args.tcp else '',
-                                        args.factor,
-                                        strftime('%Y-%m-%d_%H-%M-%S',
-                                                 localtime()))
-    logging.basicConfig(filename=logfile,
-                        level=logging.DEBUG,
-                        format='%(message)s')
-
     if args.free:
-        args.bandwidth_to = args.bandwidth_from
-        args.delay_to = args.delay_from
+        args.bandwidth_to = args.bandwidth_from - 1
+        args.delay_to = args.delay_from - 1
+    else:
+        logfile = 'test-%s-%s%s%f-%s.log' % (args.perf,
+                                            'udp-' if args.udp else '',
+                                            'tcp-' if args.tcp else '',
+                                            args.factor,
+                                            strftime('%Y-%m-%d_%H-%M-%S',
+                                                     localtime()))
+        logging.basicConfig(filename=logfile,
+                            level=logging.DEBUG,
+                            format='%(message)s')
 
     for bdw in range(args.bandwidth_from, args.bandwidth_to,
                      args.bandwidth_step):
