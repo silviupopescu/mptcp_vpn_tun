@@ -143,6 +143,9 @@ def run_test(args, bdw, dly):
     if args.tcp:
         server_addr = peer_presets[server_name][2]
 
+    if args.free:
+        return
+
     if host == server_name:
         if args.perf == 'iperf':
             subprocess.call(['iperf', '-s'])
