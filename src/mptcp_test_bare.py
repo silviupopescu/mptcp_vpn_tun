@@ -204,6 +204,8 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--perf', choices=['iperf', 'netperf'],
                         default='netperf',
                         help='Program to run bandwidth test')
+    parser.add_argument('-F', '--free', action='store_true',
+                        help='free mode; just setup and exit')
     parser.add_argument('-v', '--version', action='store_true', help='version')
     args = parser.parse_args()
 
@@ -223,6 +225,10 @@ if __name__ == '__main__':
     logging.basicConfig(filename=logfile,
                         level=logging.DEBUG,
                         format='%(message)s')
+
+    if args.free:
+        args.bandwidth_to = args.bandwidth_from
+        args.delay_to = args.delay_from
 
     for bdw in range(args.bandwidth_from, args.bandwidth_to,
                      args.bandwidth_step):
