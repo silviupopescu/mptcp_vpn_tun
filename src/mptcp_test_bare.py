@@ -133,8 +133,7 @@ def run_test(args, bdw, dly):
     host = platform.node()
     setup_host(host, args.congestion, bdw, dly, 0, args.udp, args.tcp, args)
 
-    if (not(args.udp and args.tcp)):
-        subprocess.call(['sysctl', '-w', 'net.ipv4.tcp_congestion_control=cubic'])
+    if args.congestion == 'cubic':
         subprocess.call(['sysctl', '-w', 'net.mptcp.mptcp_enabled=0'])
         subprocess.call(['sysctl', '-w', 'net.mptcp.mptcp_path_manager=default'])
 
@@ -214,10 +213,6 @@ if __name__ == '__main__':
 
     if args.version:
         print 'MPTCP/OpenVPN tester v4.0 (Christina)'
-
-    if args.perf == 'netperf':
-        args.duration = 30
-        args.runs = 1
 
     if args.free:
         args.bandwidth_to = args.bandwidth_from - 1
