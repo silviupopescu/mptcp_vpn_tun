@@ -70,7 +70,7 @@ def setup_udp(host, bdw, dly, txqueuelen, factor):
     bdp = int(factor * bdw * dly * 125)
     bdp_pages = bdp / 4096
     udp_mem = '%d %d %d' % (bdp_pages, bdp_pages, bdp_pages) # min, pressure, max
-    udp_mem_sysctl = 'net.ipv4.udp_mem="%s"' % udp_mem
+    udp_mem_sysctl = 'net.ipv4.udp_mem=%s' % udp_mem
     subprocess.call(['sysctl', '-w', udp_mem_sysctl])
     subprocess.call(['sysctl', '-w', 'net.ipv4.udp_rmem_min=%d' % bdp])
     subprocess.call(['sysctl', '-w', 'net.ipv4.udp_wmem_min=%d' % bdp])
@@ -95,13 +95,13 @@ def setup_tcp(host, bdw, dly, txqueuelen, factor):
     bdp = int(factor * bdw * dly * 125)
     bdp_pages = bdp / 4096
     tcp_mem = '%d %d %d' % (bdp_pages, bdp_pages, bdp_pages) # min, pressure, max
-    tcp_mem_sysctl = 'net.ipv4.tcp_mem="%s"' % tcp_mem
+    tcp_mem_sysctl = 'net.ipv4.tcp_mem=%s' % tcp_mem
     subprocess.call(['sysctl', '-w', tcp_mem_sysctl])
     tcp_rmem = '%d %d %d' % (bdp, bdp, bdp) # min, default, max
-    tcp_rmem_sysctl = 'net.ipv4.tcp_rmem="%s"' % tcp_rmem
+    tcp_rmem_sysctl = 'net.ipv4.tcp_rmem=%s' % tcp_rmem
     subprocess.call(['sysctl', '-w', tcp_rmem_sysctl])
     tcp_wmem = '%d %d %d' % (bdp, bdp, bdp) # min, default, max
-    tcp_wmem_sysctl = 'net.ipv4.tcp_wmem="%s"' % tcp_wmem
+    tcp_wmem_sysctl = 'net.ipv4.tcp_wmem=%s' % tcp_wmem
     subprocess.call(['sysctl', '-w', tcp_wmem_sysctl])
     server_name = peer_presets.keys()[0]
     client_name = peer_presets.keys()[1]
