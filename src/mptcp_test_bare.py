@@ -69,7 +69,7 @@ def setup_core(algo, bdw, dly, factor, scheduler):
 
 def setup_udp(host, bdw, dly, txqueuelen, factor):
     bdp = int(factor * bdw * dly * 125)
-    bdp_pages = bdp / resource.getpagesize()
+    bdp_pages = 1 if bdp < resource.getpagesize() else bdp / resource.getpagesize()
     udp_mem = '%d %d %d' % (bdp_pages, bdp_pages, bdp_pages) # min, pressure, max
     udp_mem_sysctl = 'net.ipv4.udp_mem=%s' % udp_mem
     subprocess.call(['sysctl', '-w', udp_mem_sysctl])
@@ -94,7 +94,7 @@ def setup_udp(host, bdw, dly, txqueuelen, factor):
 
 def setup_tcp(host, bdw, dly, txqueuelen, factor):
     bdp = int(factor * bdw * dly * 125)
-    bdp_pages = bdp / resource.getpagesize()
+    bdp_pages = 1 if bdp < resource.getpagesize() else bdp / resource.getpagesize()
     tcp_mem = '%d %d %d' % (bdp_pages, bdp_pages, bdp_pages) # min, pressure, max
     tcp_mem_sysctl = 'net.ipv4.tcp_mem=%s' % tcp_mem
     subprocess.call(['sysctl', '-w', tcp_mem_sysctl])
