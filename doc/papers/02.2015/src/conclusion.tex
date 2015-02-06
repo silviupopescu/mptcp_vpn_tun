@@ -1,19 +1,5 @@
 % vim: set tw=78 sts=2 sw=2 ts=8 aw et ai:
 
-We have performed experiments to determine the influence of using MPTCP on
-tunneled traffic with the end goal of offering both high throughput, as well
-as encrypted communication. We have focused on avoiding cached TCP parameters
-and determining optimal buffer sizes. Our results show that MPTCP is able to
-move traffic from a congested path to a less congested alternative and that
-the best behavior is achieved when the socket buffer is twice the size of the
-bandwidth-delay product. Any less than that and the buffer is not large enough
-to cope with long fat networks and anything larger wastes memory which also
-leads to decreased performance. While encrypting the traffic induces some
-penalty, we consider it avoidable in a setup which does not exhibit several
-layers of virtualization, which is the case with our testbed.
+We have performed experiments to compare the performance of two MPTCP congestion algorithms that use different approaches to congestion control. While OLIA has consistently achieved better throughput in experiments, wVegas has maintained a more stable throughput across the test time interval due to its delay-based approach which prevents packet losses. Both approaches have their advantages and drawbacks. They can complement each other, therefore a solution that combines them could prove extremely beneficial.
 
-With regards to future work, the next step is moving to a testbed with
-multiple virtual machines, in order to reduce the amount of virtualization we
-are performing. Additionally, we will devise a system that dynamically creates
-OpenVPN tunnels based on available unfiltered protocols and use MPTCP to
-counter the performance loss added by encapsulating traffic.
+This report concludes the investigation and optimization stage of the project. We have identified all the necessary configurations that can contribute to achieving maximum throughput for tunneled MPTCP traffic. With all the tools in place, future work consists of the implementation of a system that dynamically creates MPTCP OpenVPN tunnels based on available unfiltered protocols.
