@@ -14,8 +14,9 @@ import resource
 #   \                           /
 #    -----------tun1------------
 
-peer_presets = {'smother-1':['10.8.0.178', '12.0.0.1', '13.0.0.1'],
-                'smother-2':['10.8.0.180', '12.0.0.2', '13.0.0.2']}
+# these are replaced from the CLI params
+peer_presets = {'smother-server':['127.0.0.1', '12.0.0.1', '13.0.0.1'],
+                'smother-client':['127.0.0.1', '12.0.0.2', '13.0.0.2']}
 
 def setup_core(algo, bdw, dly, factor, scheduler):
     subprocess.call(['sysctl', '-w', 'net.mptcp.mptcp_enabled=1'])
@@ -123,11 +124,20 @@ def setup_tcp(host, bdw, dly, txqueuelen, factor):
     subprocess.call(['ip', 'route', 'add', 'default', 'dev', 'tun1', 'table', '2'])
 
 def setup_host(host, algo, bdw, dly, txqueuelen, hasUDP, hasTCP, args):
-    setup_core(algo, bdw, dly, args.factor, args.scheduler)
+    max_dly = dly
+    max_factor = args.factor
+    if args.free:
+        max_dly = max(dly, args.delay_udp, args.delay_tcp)
+        max_factor = max(args.factor, args.factor_udp, args.factor_tcp)
+    setup_core(algo, bdw, max_dly, max_factor, args.scheduler)
     if hasUDP:
-        setup_udp(host, bdw, dly, txqueuelen, args.factor)
+        udp_dly = args.delay_udp if args.free else dly
+        udp_factor = args.factor_udp if args.free else args.factor
+        setup_udp(host, bdw, udp_dly, txqueuelen, udp_factor)
     if hasTCP:
-        setup_tcp(host, bdw, dly, txqueuelen, args.factor)
+        tcp_dly = args.delay_tcp if args.free else dly
+        tcp_factor = args.factor_tc[ if args.free else args.factor
+        setup_tcp(host, bdw, tcp_dly, txqueuelen, tcp_factor)
 
 def run_test(args, bdw, dly):
     #txqueuelen = 0 #int(ceil(float(bdp) / mtu))
@@ -177,8 +187,16 @@ def run_test(args, bdw, dly):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="""run MPTCP over OpenVPN
                                      throughput tests""")
+    parser.add_argument('-sname', '--server-name', help='server hostname')
+    parser.add_argument('-sip', '--server-ip', help='server IP address')
+    parser.add_argument('-cname', '--client-name', help='client hostname')
+    parser.add_argument('-cip', '--client-ip', help='client IP address')
     parser.add_argument('-f', '--factor', type=float, default=1.0,
                         help='buffer size = factor * BDP')
+    parser.add_argument('-fudp', '--factor-udp', type=float, default=1.0,
+                        help='UDP buffer size factor; free mode only')
+    parser.add_argument('-ftcp', '--factor-tcp', type=float, default=1.0,
+                        help='TCP buffer size factor; free mode only')
     parser.add_argument('-u', '--udp', action='store_true',
                         help='create a UDP tunnel')
     parser.add_argument('-t', '--tcp', action='store_true',
@@ -196,6 +214,10 @@ if __name__ == '__main__':
                         help='bandwidth step value (Mbps)')
     parser.add_argument('-bt', '--bandwidth-to', type=int, default=9,
                         help='bandwidth stop value (Mbps)')
+    parser.add_argument('-dudp', '--delay-udp', type=int, default=100,
+                        help='UDP delay start value (ms); free mode only')
+    parser.add_argument('-dtcp', '--delay-tcp', type=int, default=25,
+                        help='TCP delay start value (ms); free mode only')
     parser.add_argument('-df', '--delay-from', type=int, default=50,
                         help='delay start value (ms)')
     parser.add_argument('-ds', '--delay-step', type=int, default=-10,
@@ -213,21 +235,26 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.version:
-        print 'MPTCP/OpenVPN tester v4.0 (Christina)'
+        print 'MPTCP/OpenVPN tester v5.0 (Shining Finger)'
+
+    peer_presets[args.server_name] = peer_presets.pop('smother-server')
+    peer_presets[args.client_name] = peer_presets.pop('smother-client')
+    peer_presets[args.server_name][0] = args.server_ip
+    peer_presets[args.client_name][0] = args.client_ip
 
     if args.free:
-        args.bandwidth_to = args.bandwidth_from - 1
-        args.delay_to = args.delay_from - 1
-    else:
-        logfile = 'test-%s-%s%s%f-%s.log' % (args.perf,
-                                            'udp-' if args.udp else '',
-                                            'tcp-' if args.tcp else '',
-                                            args.factor,
-                                            strftime('%Y-%m-%d_%H-%M-%S',
-                                                     localtime()))
-        logging.basicConfig(filename=logfile,
-                            level=logging.DEBUG,
-                            format='%(message)s')
+        run_test(args, args.bandwidth_from, args.delay_from)
+        sys.exit()
+
+    logfile = 'test-%s-%s%s%f-%s.log' % (args.perf,
+                                         'udp-' if args.udp else '',
+                                         'tcp-' if args.tcp else '',
+                                         args.factor,
+                                         strftime('%Y-%m-%d_%H-%M-%S',
+                                                  localtime()))
+    logging.basicConfig(filename=logfile,
+                        level=logging.DEBUG,
+                        format='%(message)s')
 
     for bdw in range(args.bandwidth_from, args.bandwidth_to,
                      args.bandwidth_step):
