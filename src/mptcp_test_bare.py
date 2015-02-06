@@ -136,7 +136,7 @@ def setup_host(host, algo, bdw, dly, txqueuelen, hasUDP, hasTCP, args):
         setup_udp(host, bdw, udp_dly, txqueuelen, udp_factor)
     if hasTCP:
         tcp_dly = args.delay_tcp if args.free else dly
-        tcp_factor = args.factor_tc[ if args.free else args.factor
+        tcp_factor = args.factor_tcp if args.free else args.factor
         setup_tcp(host, bdw, tcp_dly, txqueuelen, tcp_factor)
 
 def run_test(args, bdw, dly):
