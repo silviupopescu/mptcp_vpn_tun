@@ -5,20 +5,6 @@ achievable throughput using a single tunnel. Figures \ref{fig:udp} and
 \ref{fig:tcp} show the results for a UDP tunnel and a TCP tunnel,
 respectively.
 
-\begin{figure}
-  \centering
-  \includegraphics[width=\textwidth]{img/test-udp}
-  \caption{UDP tunnel throughput}
-  \label{fig:udp}
-\end{figure}
-
-\begin{figure}
-  \centering
-  \includegraphics[width=\textwidth]{img/test-tcp}
-  \caption{TCP tunnel throughput}
-  \label{fig:tcp}
-\end{figure}
-
 In the case of the UDP tunnel, we notice that for lower link capacities, the
 UDP tunnel manages to offer throughput close to the maximum achievable values.
 That does not apply for larger bandwidths and delay. We consider that the root
@@ -47,20 +33,6 @@ our case the TCP tunnel. A relevant factor in assisting MPTCP was configuring
 the buffer size for a connection. We have based our tests in this regard while
 taking into account the bandwidth-delay product of the link.
 
-\begin{figure}
-  \centering
-  \includegraphics[width=\textwidth]{img/test-mptcp-05}
-  \caption{UDP and TCP tunnels throughput, $buffer size = 0.5 \times BDP$}
-  \label{fig:mptcp-0.5}
-\end{figure}
-
-\begin{figure}
-  \centering
-  \includegraphics[width=\textwidth]{img/test-mptcp}
-  \caption{UDP and TCP tunnels throughput, $buffer size = BDP$}
-  \label{fig:mptcp}
-\end{figure}
-
 Figures \ref{fig:mptcp-0.5} and \ref{fig:mptcp} show the throughput when the
 buffer size was either half or equal to the bandwidth-delay product. In most
 cases, the results are similar or better when compared to single UDP and
@@ -70,12 +42,6 @@ tunnel, with the problem being more obvious when the buffer size is half of
 the BDP. The cause lies in the fact that the buffer is insufficient and cannot
 hold all the necessary packets.
 
-\begin{figure}
-  \centering
-  \includegraphics[width=\textwidth]{img/test-mptcp-2}
-  \caption{UDP and TCP tunnels throughput, $buffer size = 2 \times BDP$}
-  \label{fig:mptcp-2}
-\end{figure}
 
 Figure \ref{fig:mptcp-2} presents the throughput when the buffer size is twice
 the BDP. Using this configuration, we notice that even at the high end of the
@@ -92,26 +58,6 @@ and a delay of 30ms we notice a drop in throughput, with an even greater drop
 in performance in the case of four times the BDP. This is a consequence of
 granting too much memory for network buffers.
 
-\begin{figure}
-  \centering
-  \includegraphics[width=\textwidth]{img/test-mptcp-3}
-  \caption{UDP and TCP tunnels throughput, $buffer size = 3 \times BDP$}
-  \label{fig:mptcp-3}
-\end{figure}
-
-\begin{figure}
-  \centering
-  \includegraphics[width=\textwidth]{img/test-mptcp-4}
-  \caption{UDP and TCP tunnels throughput, $buffer size = 4 \times BDP$}
-  \label{fig:mptcp-4}
-\end{figure}
-
-\begin{figure}
-  \centering
-  \includegraphics[width=\textwidth]{img/test-mptcp-2-crypto}
-  \caption{UDP and TCP tunnels throughput, $buffer size = 2 \times BDP$, Blowfish CBC and SHA1}
-  \label{fig:mptcp-2-crypto}
-\end{figure}
 
 Since our tests indicate that a buffer size twice the bandwidth-delay product
 yields the best results, we have also looked at how OpenVPN's normal mode of
