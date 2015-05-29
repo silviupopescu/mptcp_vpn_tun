@@ -1,0 +1,58 @@
+% vim: set tw=78 sts=2 sw=2 ts=8 aw et ai:
+\documentclass[12pt]{article}
+
+\usepackage[paper=a4paper, top=2cm, bottom=3cm, left=2.5cm, right=2.5cm]{geometry}
+
+\usepackage{ucs}
+\usepackage[utf8x]{inputenc}
+\usepackage[english]{babel}
+%\usepackage{hyperref}	  % use \url{http://$URL} or \href{http://$URL}{Name}
+\usepackage{underscore}	  % underscores need not be escaped
+\usepackage{subfigure}
+\usepackage{verbatim}
+\usepackage{float}
+\usepackage{booktabs}     % professional tables
+\usepackage{parskip}
+
+% Support for including graphics
+\usepackage{graphicx}
+\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+
+\title{Multipath TCP Ninja Tunneling on Mobile Devices}
+
+\author{Silviu Petria, Silviu Popescu\\
+Faculty of Automatic Control and Computers\\
+University POLITEHNICA of Bucharest\\
+Splaiul Independenței 313, Bucharest, Romania, 060042 \\
+\emph{\{silviu.petria,silviu.popescu\}@cti.pub.ro}}
+
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+\input{src/abstract}
+\end{abstract}
+
+\section{Introduction}
+\label{sec:introduction}
+\input{src/introduction}
+
+\section{Context}
+\label{sec:context}
+\input{src/context}
+
+\section{Scenarios and Results}
+\label{sec:results}
+\input{src/results}
+
+\section{Conclusion and Further Work}
+\label{sec:conclusion}
+\input{src/conclusion}
+
+\bibliographystyle{abbrv}
+\bibliography{my-report}
+
+\end{document}

@@ -1,0 +1,23 @@
+% vim: set tw=78 sts=2 sw=2 ts=8 aw et ai:
+Our previous reports tackled the issue of maximizing MPTCP throughput over
+OpenVPN through TCP link parameters along with other system and network configurations. The main focus point was the relation between the bandwidth-delay product and MPTCP's ability to move traffic between paths with different levels of congestion.
+
+We have used these findings to conclude that the best MPTCP behavior is achieved when the socket buffer is twice the size of the bandwidth-delay product \cite{sem2}. However, one of the results that stood out was the very poor performance of MPTCP running over a single OpenVPN TCP tunnel. The throughput results were measured in Kbps despite the link capacity ranging from 10 Mbps to 100 Mbps. Among possible explanations we considered the nature of our testbed (heavily virtualized environment, copious amounts of data crossing between user-space and kernel-space) and the effect of encapsulating TCP traffic in TCP.
+
+We decided that it is worthwhile to investigate the effects of different
+congestion algorithms in various setups such as MPTCP over single tunnels
+(either UDP or TCP) and MPTCP over multiple tunnels. Experiments were ran
+using algorithms such as MPTCP's default congestion algorithm OLIA, as well as
+the new wVegas congestion control algorithm, included in the latest release of
+the reference MPTCP implementation.
+
+Compared to the testbed used in previous stages, we have increased performance
+and lowered overhead, while adding more features that enable a closer control
+of link parameters for each tunnel. The current setup allows for more specific
+tests to be run, should an unexpected behavior be noticed.
+
+In the next section we recap our previous results in more detail and present
+the changes in our setup and methods for the current stage, highlighting some
+testbed limitations which were corrected. Section \ref{sec:results} offers a
+view of our experiments and results. Section \ref{sec:conclusion} presents our
+findings and directions of further research.
