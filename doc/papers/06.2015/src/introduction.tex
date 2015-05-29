@@ -1,23 +1,6 @@
 % vim: set tw=78 sts=2 sw=2 ts=8 aw et ai:
-Our previous reports tackled the issue of maximizing MPTCP throughput over
-OpenVPN through TCP link parameters along with other system and network configurations. The main focus point was the relation between the bandwidth-delay product and MPTCP's ability to move traffic between paths with different levels of congestion.
+Previous work on the project focused on identifying the optimal conditions for maximum MPTCP throughput over OpenVPN tunnels. In the first stage, we identified and tested a set of system and network configurations for enhanced performance. Our main finding was that the best MPTCP behavior is achieved when the socket buffer is twice the size of the bandwidth-delay product \cite{sem2}. In the second stage we investigated the effects of different congestion control algorithms over a variety of network setups. Algorithms such as OLIA and wVegas were compared with OLIA found to offer the best throughput \cite{sem3}. All our experiments were run inside a virtualized testbed, at first using the Mininet network simulator and then switching to a KVM environment.
 
-We have used these findings to conclude that the best MPTCP behavior is achieved when the socket buffer is twice the size of the bandwidth-delay product \cite{sem2}. However, one of the results that stood out was the very poor performance of MPTCP running over a single OpenVPN TCP tunnel. The throughput results were measured in Kbps despite the link capacity ranging from 10 Mbps to 100 Mbps. Among possible explanations we considered the nature of our testbed (heavily virtualized environment, copious amounts of data crossing between user-space and kernel-space) and the effect of encapsulating TCP traffic in TCP.
+The single use case we had in mind at the start was that of a user who sits behind a firewall with only a few common ports left open, e.g. HTTP, HTTPS, DNS. Opening tunnels on all these ports and joining them under the same MPTCP connection would enable any application to bypass the egress firewall while also maximizing its throughput. As work on the project progressed, more use cases became apparent. A very common situation is that of mobile network carriers enforcing traffic shaping policies targeted at (a) over-the-network phone call applications such as Skype or (b) certain common ports. Furthermore, our tests showed that some mobile network operators use middleboxes that filter MPTCP options altogether, making tunneling mandatory if any kind of multipath communication is to be achieved. Therefore our solution could be used to enable mobile users to take advantage of all of their applications. In addition, virtually all smartphones today are equipped with multiple network interfaces (WiFi, 3/4G) - MPTCP bandwidth aggregation can further improve performance. For these we have decided to build a prototype aimed at mobile devices. We have deployed the prototype on a regular smartphone and tested it over a well-known mobile network carrier.
 
-We decided that it is worthwhile to investigate the effects of different
-congestion algorithms in various setups such as MPTCP over single tunnels
-(either UDP or TCP) and MPTCP over multiple tunnels. Experiments were ran
-using algorithms such as MPTCP's default congestion algorithm OLIA, as well as
-the new wVegas congestion control algorithm, included in the latest release of
-the reference MPTCP implementation.
-
-Compared to the testbed used in previous stages, we have increased performance
-and lowered overhead, while adding more features that enable a closer control
-of link parameters for each tunnel. The current setup allows for more specific
-tests to be run, should an unexpected behavior be noticed.
-
-In the next section we recap our previous results in more detail and present
-the changes in our setup and methods for the current stage, highlighting some
-testbed limitations which were corrected. Section \ref{sec:results} offers a
-view of our experiments and results. Section \ref{sec:conclusion} presents our
-findings and directions of further research.
+The next section describes some of the related research on the effort to mitigate middlebox interference on MPTCP. Section \ref{sec:setup} showcases our prototype and details our setup. Section \ref{sec:results} details our experiments and analyzes the results. Conclusions and future research directions are presented in section \ref{sec:conclusion}.
