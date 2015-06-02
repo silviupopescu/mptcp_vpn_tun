@@ -2,18 +2,18 @@
 
 To determine the extent to which there is a use case for ninja tunneling on mobile devices we have performed an analysis of the four major Romanian mobile operators. We investigated whether packet changing middleboxes exist in their networks and whether traffic shaping is applied per port or per application. Table \ref{table:operators} presents our findings. With regards to the filtering of MPTCP options we have determined that all but one operator (Operator 3) employ packet changing middleboxes that remove the MPTCP options from the TCP header, forcing the endpoints to fallback to TCP. Traffic shaping analysis revealed that all operators use policies that rate-limit traffic on port 53. Since many operators offer DNS traffic free of charge \cite{freedns}, we suspect this is an intentional measure meant to thwart savvy users who would attempt to tunnel all of their traffic on port 53, thus avoiding charges completely. Our tests with an OpenVPN tunnel running on port 53 resulted in packet losses of around 70% on the link for all four operators.
 
-Even though Operator 3 does not filter MPTCP in its network, its coverage is the poorest of the four. The throughput values obtained were not viable for our proposed experiments and therefore we have decided to settle on Operator 1. Application analysis for Operator 1 revealed further traffic shaping policies, with Skype calls only working on a data-only subscription - not on voice-plus-data one.
+Even though Operator 3 does not filter MPTCP in its network, its coverage is the poorest of the four. The throughput values obtained were not viable for our proposed experiments and therefore we have decided to settle on Operator 1. Application analysis for Operator 1 revealed further traffic shaping policies, with Skype calls only working on a data-only subscription - not on voice-plus-data one. Skype calls work for Operators 2, 3 and 4.
 
 \begin{center}
     \begin{table}
     \centering
-    \begin{tabular}{ | l | l | l | }
+    \begin{tabular}{ | l | l | l | l | }
     \hline
-    Name & Filters MPTCP & Traffic Shaping \\ \hline
-    Operator 1 & Yes & Port and application  \\ \hline
-    Operator 2 & Yes & Port \\ \hline
-    Operator 3 & No & Port \\ \hline
-    Operator 4 & Yes & Port \\ \hline
+    Name & Filters MPTCP & Traffic Shaping - port & Traffic shaping - application \\ \hline
+    Operator 1 & Yes & Yes & Yes  \\ \hline
+    Operator 2 & Yes & Yes & No \\ \hline
+    Operator 3 & No & Yes & No \\ \hline
+    Operator 4 & Yes & Yes & No \\ \hline
     \end{tabular}
     \caption{Analysis of the four major Romanian mobile operators. All but one use middleboxes that filter MPTCP options. All perform traffic shaping on certain ports and/or applications. }
     \label{table:operators}
@@ -29,3 +29,5 @@ Our experimental setup consists of a mobile terminal (a Galaxy Nexus I9250 phone
 \end{itemize}
 
 The throughput distribution over the tunnels is analyzed to determine the performance for different combinations while taking into account the underlying network behavior and traffic policies applied by Operator 1.
+
+To try to mitigate the effects of DNS traffic shaping, we run a separate series of experiments using iodine tunnels. Iodine is a solution that allows the transfer of IPv4 data inside DNS queries to a server.
