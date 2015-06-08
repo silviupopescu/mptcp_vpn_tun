@@ -12,13 +12,13 @@ daytime hours, for comparison purposes. We have managed to reach throughput of
 roughly 4Mbps, for both upload and download. This particular operator
 advertises maximum speeds of 150Mbps for download and 75Mbps for upload.
 
-Initially, we have used CUBIC, the default congenstion control algorithm used
+Initially we have used CUBIC, the default congestion control algorithm used
 on Linux systems, which is not designed to be aware of multiple paths. In
-terms of upload, \ref{fig:up-cubic} highlights that throughput reaches values
+terms of upload, Figure \ref{fig:up-cubic} highlights that throughput reaches values
 of up to 14Mbps, but averages aroung 8Mbps. While there are some spontaneous
-drops, more prolongued periods of lower throughput can be noticed in the
+drops, more prolonged periods of lower throughput can be noticed in the
 morning, before noon, and in the evening, after 20:00. This can be correlated
-with devices being used before and after work house, respectively.
+with devices being used before and after work hours, respectively.
 
 \begin{figure}[H]
   \centering
@@ -53,7 +53,7 @@ flows, we will contrast it with CUBIC. Looking at the upload throughput
 outlined in \ref{fig:up-olia} the peaks value is slightly higher, namely
 16Mbps. The average value is also higher, close to 10Mbps. The previouly
 mentioned time intervals for poor performance seen with CUBIC are not
-dicernible.
+discernible.
 
 \begin{figure}[H]
   \centering
@@ -150,5 +150,5 @@ OpenVPN:
 \end{itemize}
 
 Since Iodine was not affected by traffic shaping in the way OpenVPN was we can
-conclude that Operator 3 differentiates between packets sent on port 53 and
+conclude that Operator 1 differentiates between packets sent on port 53 and
 actual DNS queries (inside of which Iodine hides the useful data). Therefore we can conclude that shaping is done not only based on destination port but also on packet type and content.
