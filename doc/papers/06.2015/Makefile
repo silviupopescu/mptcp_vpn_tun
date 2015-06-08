@@ -24,7 +24,7 @@ $(PDF): $(TEX) $(BIB) src/
 	# Twice, so TOC is also updated
 	$(PDFLATEX) $<
 	$(PDFLATEX) $<
-	mv $(PDF) R3_SRIC_SilviuPetria_SilviuPopescu.pdf
+	mv $(PDF) R4_SRIC_SilviuPetria_SilviuPopescu.pdf
 
 clean:
 	-rm -f *~ *.aux *.log *.blg *.bbl *.out

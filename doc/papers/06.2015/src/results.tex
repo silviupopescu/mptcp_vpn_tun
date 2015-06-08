@@ -1,10 +1,15 @@
 % vim: set tw=78 sts=2 sw=2 ts=8 aw et ai:
 
-\section{IP-over-DNS tunneling with iodine}
+\section{IP-over-DNS tunneling with Iodine}
 
-In order to gain a better understanding of how cellular network operators perform traffic shaping on port 53 we have run a separate series of throughput tests using iodine. Iodine is an open source tool that allows tunneling IPv4 traffic through a DNS server. It is targeted at the scenario where internet access is firewalled but DNS queries are allowed.
+In order to gain a better understanding of how cellular network operators
+perform traffic shaping on port 53 we have run a separate series of throughput
+tests usinga Iodine. Iodine is an open source tool that allows tunneling IPv4
+traffic through a DNS server. It is targeted at the scenario where Internet access is firewalled but DNS queries are allowed.
 
-The experimental setup consists of the same Galaxy Nexus I9250 phone running a cross-compiled instance of the iodine client and an external server with a public IP address running the iodine server. Iodine creates  a tunnel interface called \textit{dns0} over which the server and the client can communicate by placing data inside DNS queries. The tests we perform include:
+The experimental setup consists of the same Galaxy Nexus I9250 phone running a
+cross-compiled instance of the Iodine client and an external server with a
+public IP address running the Iodine server. Iodine creates  a tunnel interface called \textit{dns0} over which the server and the client can communicate by placing data inside DNS queries. The tests we perform include:
 
 \begin{itemize}
 \item UDP upload, using iperf with default parameters
@@ -15,8 +20,8 @@ The experimental setup consists of the same Galaxy Nexus I9250 phone running a c
 We run three batches of the tests described above:
 
 \begin{itemize}
-\item using iodine over the \textit{dns0} tunnel interface
-\item using openvpn over port 53
+\item using Iodine over the \textit{dns0} tunnel interface
+\item using OpenVPN over port 53
 \item using the default 3G interface \textit{rmnet0} with no tunnels for baseline comparison
 \end{itemize}
 
@@ -31,12 +36,17 @@ We run three batches of the tests described above:
 	iodine & 1.14 & 1.32 & 2.6 & 2.35 \\ \hline
 	openvpn & 0.087 & 0.55 & 49 & N/A \\ \hline
 	\end{tabular}
-	\caption{Throughput comparison between iodine, openvpn and default 3G. Average of ten tests run during daytime hours.}
+	\caption{Throughput comparison between Iodine, OpenVPN and default 3G. Average of ten tests run during daytime hours.}
 	\label{table:iodine}
 	\end{table}
 \end{center}
 	
-Table \ref{table:iodine} presents the results. The 3G interface offers a low throughput to begin with but iodine manages to almost match it. The throughput obtained by iodine is consistent with documentation. It is also worth noting that the iodine tunnel is not affected by the packet losses we observe when using openvpn. Port 53 traffic shaping is once again observed in the case of openvpn:
+Table \ref{table:iodine} presents the results. The 3G interface offers a low
+throughput to begin with but Iodine manages to almost match it. The throughput
+obtained by Iodine is consistent with documentation. It is also worth noting
+that the Iodine tunnel is not affected by the packet losses we observe when
+using OpenVPN. Port 53 traffic shaping is once again observed in the case of
+OpenVPN:
 
 \begin{itemize}
 \item TCP throughput is very low. Only three out of ten tests finished. Packet captures on the server revealed only a handful of packets had arrived.
@@ -44,4 +54,6 @@ Table \ref{table:iodine} presents the results. The 3G interface offers a low thr
 \item HTTP downloads using wget were unable to complete. The application repeatedly stalled after only a few kilobytes had been transferred.
 \end{itemize}
 
-Since iodine was not affected by traffic shaping in the way openvpn was we can conclude that Operator 3 differentiates between packets sent on port 53 and actual DNS queries (inside of which iodine hides the useful data). Therefore we can conclude that shaping is done not only based on destination port but also on packet type and content.
+Since Iodine was not affected by traffic shaping in the way OpenVPN was we can
+conclude that Operator 3 differentiates between packets sent on port 53 and
+actual DNS queries (inside of which Iodine hides the useful data). Therefore we can conclude that shaping is done not only based on destination port but also on packet type and content.
