@@ -1,1 +1,32 @@
 % vim: set tw=78 sts=2 sw=2 ts=8 aw et ai:
+
+The current paper has looked as a prototype solution aimed at maximizing
+throughput in constrained environments, based on MPTCP and OpenVPN. We have
+looked at mobile networks, since carriers employ various means of restricting
+the data that passes through their network. As seen in Section \ref{sec:setup}
+MPTCP filtering, per port traffic shaping and even per application traffic
+shaping are common approaches.
+
+While testing our system in terms of traffic direction, congestion control and
+tunnel combination, we have achieved performance on par with normal
+communication, with the added benefit of encryption, multiple paths and
+circumventing some operator restrictions. We have noticed that most of our
+traffic is shifted onto the UDP and DNS tunnels, which is expected given the
+unfavorable interaction that can arise between TCP and MPTCP congestion
+control. Additionally, we have noticed aggresive filtering of the HTTP tunnel,
+hinting at deep packet inspection on the side of the carrier.
+
+We have also looked in depth at the shaping done by the operator on DNS
+tunnels. To this end, we have compared our solution with and existing DNS
+tunneling solution, Iodine. The results show that the mobile operator also
+does deep packet inspection on DNS packets, since Iodine places tunnel data in
+the DNS payload, thus achieving improved throughput.
+
+Although there are some issues due to carriers performing deep packet
+inspection on popular ports, our prototype is a feasible solution for
+enhancing application throughput and bypassing firewall restrictions. Further
+research could focus on encapsulating the tunnel data in the application
+payload specific to the port used, thus thwarting deep packet inspection.
+Another possible improvement is the usage of dynamic tunnels, where the paths
+used are not established beforehand, but created and teared down as network
+conditions change.
