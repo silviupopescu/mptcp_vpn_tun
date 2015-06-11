@@ -1,0 +1,10 @@
+\beamer@endinputifotherversion {3.33pt}
+\select@language {english}
+\beamer@sectionintoc {1}{Ninja Tunneling}{2}{0}{1}
+\beamer@sectionintoc {2}{Cellular Operators Analysis}{3}{0}{2}
+\beamer@sectionintoc {3}{Setup}{4}{0}{3}
+\beamer@sectionintoc {4}{CUBIC}{5}{0}{4}
+\beamer@sectionintoc {5}{OLIA}{7}{0}{5}
+\beamer@sectionintoc {6}{Throughput distribution}{9}{0}{6}
+\beamer@sectionintoc {7}{Iodine}{10}{0}{7}
+\beamer@sectionintoc {8}{Conclusion}{11}{0}{8}
